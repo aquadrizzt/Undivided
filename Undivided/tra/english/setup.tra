@@ -1,0 +1,4 @@
+@0 = ~Undivided~
+
+@10 = ~Global("qd_morte_party","GLOBAL",1)~ 
+@11 = ~Global("qd_nordom_party","GLOBAL",1)~

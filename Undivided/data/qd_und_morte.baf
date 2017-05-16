@@ -1,0 +1,29 @@
+//Play Dead if reduced to 1 HP 
+IF 
+	HP(Myself,1)
+	Global("qd_morte_play_dead","LOCALS",0)
+	Global("qd_morte_party","GLOBAL",1)
+THEN
+	RESPONSE #100
+		SetGlobal("qd_morte_play_dead","LOCALS",1)
+		SetSequence(ANIM_DIE)
+		SetSequence(SEQ_DIE)
+		ChangeEnemyAlly(Myself, NEUTRAL)
+		Continue() 
+END 
+
+//Wake up from Playing Dead if No Enemies in Sight 
+IF 
+	!See(NearestEnemyOf(Protagonist))
+	Global("qd_morte_play_dead","LOCALS",1)
+	Global("qd_morte_party","GLOBAL",1)
+THEN
+	RESPONSE #100
+		Wait(5)
+		SetGlobal("qd_morte_play_dead","LOCALS",0)
+		SetSequence(ANIM_GETUP)
+		ApplySpellRES("QDUND1",Myself)
+		Wait(1)
+		ChangeEnemyAlly(Myself, FAMILIAR)
+		Continue() 
+END 
