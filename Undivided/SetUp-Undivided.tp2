@@ -15,12 +15,18 @@ LANGUAGE ~English~ ~english~ ~Undivided/tra/english/setup.tra~
 
 BEGIN @0
 
-// Minor dialog patches to Nordom and Morte
-COMPILE ~Undivided/data/qd_und_patch.d~
-
 COPY ~Undivided/data/qd_und1.itm~ ~override~ //min HP = 1; clear fog of war
-COPY ~Undivided/data/qdund1.spl~ ~override~ //heals morte for 1
+     ~Undivided/data/qdundm1.spl~ ~override~ //morte: prot from enemies
+	 ~Undivided/data/qdundm2.spl~ ~override~ //morte: +1 hp and remove m1
+	 ~Undivided/data/qdundm3.spl~ ~override~ //morte: levelup heal
+	 ~Undivided/data/qdundm5.spl~ ~override~ //morte: vipers bite give
 
+COPY ~Undivided/data/qdundm4.spl~ ~override~ //Bite of the Viper ability
+	SAY NAME1 @23
+	SAY UNIDENTIFIED_DESC @24  
+	
+ADD_SPELL ~override/qdundm4.spl~ 3 1 INNATE_MORTE_VIPER_BITE
+ADD_SPELL ~override/qdundm5.spl~ 3 0 SPECIAL_QD_GAIN_VIPER_BITE
 //adding min HP and exploration to Morte 
 COPY_EXISTING ~morte.cre~ ~override~ 
 	ADD_CRE_ITEM ~qd_und1~ #0 #0 #0 ~NONE~ ~LRING RRING~ EQUIP
@@ -44,6 +50,13 @@ COPY_EXISTING_REGEXP ~.*\.bcs~ ~override~
 	END 
 BUT_ONLY 
 
+//Morte will use Party AI as appropriate
+COPY_EXISTING ~pcmorte.bcs~ ~override~
+	DECOMPILE_AND_PATCH BEGIN 
+		REFACTOR_TRIGGER CASE_INSENSITIVE EXACT_MATCH ~InParty(Myself)~ ~Global("qd_morte_party","GLOBAL",1)~ 
+	END 
+BUT_ONLY 
+
 //Updates Fell's tattoos with new party checks. 
 COPY_EXISTING ~fell.sto~ ~override~
 	GET_OFFSET_ARRAY tattoos 0x34 4 0x38 4 0 0 0x58 
@@ -56,3 +69,158 @@ COPY_EXISTING ~fell.sto~ ~override~
 			WRITE_LONG (tt_off + 0x1c) RESOLVE_STR_REF(@11)
 		END 
 	END 
+
+//generating xp progression script for morte 	
+<<<<<<<< QD/morte_leveling.baf
+	IF
+		XPGT(Protagonist,%xp%)
+		XPLT(Protagonist,%xp_next%)
+		!Level(Myself,%lvl%)
+	THEN	
+		RESPONSE #100 
+			SetGlobal("qd_morte_level","GLOBAL",%lvl%)
+			ChangeStat(Myself,LEVEL,%lvl%,SET)
+			ChangeStat(Myself,MAXHITPOINTS,%hp%,SET)
+			ChangeStat(Myself,SAVEVSDEATH,%sv_d%,SET)
+			ChangeStat(Myself,SAVEVSWANDS,%sv_w%,SET)
+			ChangeStat(Myself,SAVEVSPOLY,%sv_p%,SET)
+			ChangeStat(Myself,SAVEVSBREATH,%sv_b%,SET)
+			ChangeStat(Myself,SAVEVSSPELL,%sv_s%,SET)
+			PlaySound("MRT199")
+			ApplySpellRES("QDUNDM3",Myself)
+			Continue() 
+	END 
+>>>>>>>>
+
+<<<<<<<< QD/morte_leveling_max.baf
+	IF
+		XPGT(Protagonist,%xp%)
+		!Level(Myself,%lvl%)
+	THEN	
+		RESPONSE #100 
+			SetGlobal("qd_morte_level","GLOBAL",%lvl%)
+			ChangeStat(Myself,LEVEL,%lvl%,SET)
+			ChangeStat(Myself,MAXHITPOINTS,%hp%,SET)
+			ChangeStat(Myself,SAVEVSDEATH,%sv_d%,SET)
+			ChangeStat(Myself,SAVEVSWANDS,%sv_w%,SET)
+			ChangeStat(Myself,SAVEVSPOLY,%sv_p%,SET)
+			ChangeStat(Myself,SAVEVSBREATH,%sv_b%,SET)
+			ChangeStat(Myself,SAVEVSSPELL,%sv_s%,SET)
+			PlaySound("MRT199")
+			ApplySpellRES("QDUNDM3",Myself)
+			Continue() 
+	END 
+>>>>>>>>
+
+COPY_EXISTING ~XPLEVEL.2DA~ ~override~
+	COUNT_2DA_COLS num_cols
+	COUNT_2DA_ROWS num_cols num_rows
+	READ_2DA_ENTRIES_NOW ~r2en_xp_level~ num_cols
+	FOR (col = 1; col < num_cols; col += 1) BEGIN
+		READ_2DA_ENTRY_FORMER ~r2en_xp_level~ 2 col xp
+		PATCH_IF (col < 20) THEN BEGIN 
+			READ_2DA_ENTRY_FORMER ~r2en_xp_level~ 2 col+1 xp_next
+		END 
+		INNER_ACTION BEGIN 
+			COPY_EXISTING ~savewar.2da~ ~override~ 
+				COUNT_2DA_COLS save_cols
+				READ_2DA_ENTRY 0 col save_cols death
+				READ_2DA_ENTRY 1 col save_cols wands
+				READ_2DA_ENTRY 2 col save_cols poly
+				READ_2DA_ENTRY 3 col save_cols breath
+				READ_2DA_ENTRY 4 col save_cols spell
+			ACTION_IF (col < 20) THEN BEGIN 
+				ACTION_IF (col < 10) THEN BEGIN 
+					EXTEND_BOTTOM ~pcmorte.bcs~ ~QD/morte_leveling.baf~ 
+						prev = (%col%)-1
+						lvl = (%col%)
+						xp = (%xp%)
+						xp_next = (%xp_next%)
+						hp = (12*%col%)
+						sv_d = %death%
+						sv_w = %wands%
+						sv_p = %poly%
+						sv_b = %breath%
+						sv_s = %spell%
+					EVAL 
+				END 
+				ELSE BEGIN 
+					EXTEND_BOTTOM ~pcmorte.bcs~ ~QD/morte_leveling.baf~ 
+						lvl = (%col%)
+						xp = (%xp%)
+						xp_next = (%xp_next%)
+						hp = (108 + 3*(%col%-9))
+						sv_d = %death%
+						sv_w = %wands%
+						sv_p = %poly%
+						sv_b = %breath%
+						sv_s = %spell%
+					EVAL 
+				END 
+			END 
+			ELSE BEGIN 
+				EXTEND_BOTTOM ~pcmorte.bcs~ ~QD/morte_leveling_max.baf~ 
+					prev = (%col%)-1
+					lvl = (%col%)
+					xp = (%xp%)
+					hp = (108 + 3*(%col%-9))
+					sv_d = %death%
+					sv_w = %wands%
+					sv_p = %poly%
+					sv_b = %breath%
+					sv_s = %spell%
+				EVAL 
+			END 
+		END 
+	END 
+
+//morte teeth progression 
+COPY ~Undivided/data/qdmbite1.itm~ ~override~ //level4 teeth upgrade 
+	SAY NAME1 @12
+	SAY NAME2 @12
+	SAY IDENTIFIED_DESC @13 
+	SAY UNIDENTIFIED_DESC @13 
+	
+COPY ~Undivided/data/qdmbite2.itm~ ~override~ //level8 teeth upgrade 
+	SAY NAME1 @12
+	SAY NAME2 @12 
+	SAY IDENTIFIED_DESC @14
+	SAY UNIDENTIFIED_DESC @14
+	
+COPY ~Undivided/data/qdmbite3.itm~ ~override~ //level12 teeth upgrade 
+	SAY NAME1 @12
+	SAY NAME2 @12 
+	SAY IDENTIFIED_DESC @15
+	SAY UNIDENTIFIED_DESC @15 
+	
+COPY_EXISTING ~mbite.itm~ ~override~ //slight description change 
+	SAY IDENTIFIED_DESC @16
+	SAY UNIDENTIFIED_DESC @16 
+	
+//changes to teeth and acquisition methods 
+COPY ~Undivided/data/qdingtth.itm~ ~override~ //ingress' teeth
+	SAY NAME1 @17
+	SAY NAME2 @17
+	SAY IDENTIFIED_DESC @18
+	SAY UNIDENTIFIED_DESC @18 
+
+COPY ~Undivided/data/qdfdtth.itm~ ~override~ //fire drake's teeth
+	SAY NAME1 @19
+	SAY NAME2 @19
+	SAY IDENTIFIED_DESC @20
+	SAY UNIDENTIFIED_DESC @20 	
+	
+COPY ~Undivided/data/qdvtth.itm~ ~override~ //viper's teeth
+	SAY NAME1 @21
+	SAY NAME2 @21
+	SAY IDENTIFIED_DESC @22
+	SAY UNIDENTIFIED_DESC @22
+	
+COPY_EXISTING ~marta.sto~ ~override~ 
+	LPF REPLACE_STORE_ITEM INT_VAR number_in_stock = 1 STR_VAR old_item = ~VTEETH~ new_item = ~QDVTTH~ flags = ~IDENTIFIED~ END 
+	
+COPY_EXISTING ~vris.sto~ ~override~ 
+	LPF REPLACE_STORE_ITEM INT_VAR number_in_stock = 1 STR_VAR old_item = ~FDTEETH~ new_item = ~QDFDTTH~ flags = ~IDENTIFIED~ END 
+	
+// Minor dialog patches to Nordom and Morte
+COMPILE ~Undivided/data/qd_und_patch.d~

@@ -6,15 +6,15 @@ IF
 THEN
 	RESPONSE #100
 		SetGlobal("qd_morte_play_dead","LOCALS",1)
-		SetSequence(ANIM_DIE)
 		SetSequence(SEQ_DIE)
+		ApplySpellRES("QDUNDM1",Myself)
 		ChangeEnemyAlly(Myself, NEUTRAL)
 		Continue() 
 END 
 
 //Wake up from Playing Dead if No Enemies in Sight 
 IF 
-	!See(NearestEnemyOf(Protagonist))
+	!ActuallyInCombat()
 	Global("qd_morte_play_dead","LOCALS",1)
 	Global("qd_morte_party","GLOBAL",1)
 THEN
@@ -22,8 +22,170 @@ THEN
 		Wait(5)
 		SetGlobal("qd_morte_play_dead","LOCALS",0)
 		SetSequence(ANIM_GETUP)
-		ApplySpellRES("QDUND1",Myself)
+		ApplySpellRES("QDUNDM2",Myself)
 		Wait(1)
 		ChangeEnemyAlly(Myself, FAMILIAR)
 		Continue() 
+END 
+
+//automatic teeth upgrades at 4, 8, 12 
+IF 
+	LevelGT(Myself,11)
+	Global("qd_morte_teeth_upgrade","LOCALS",0)
+THEN
+	RESPONSE #100
+		SetGlobal("qd_morte_teeth_upgrade","LOCALS",3)
+		TakeItemReplace("QDMBITE3","MBITE",Myself)
+		SmallWait(1)
+		Continue()
+END 
+
+IF 
+	LevelGT(Myself,11)
+	Global("qd_morte_teeth_upgrade","LOCALS",1)
+THEN
+	RESPONSE #100
+		SetGlobal("qd_morte_teeth_upgrade","LOCALS",3)
+		TakeItemReplace("QDMBITE3","QDMBITE1",Myself)
+		SmallWait(1)
+		Continue()
+END 
+
+IF 
+	LevelGT(Myself,11)
+	Global("qd_morte_teeth_upgrade","LOCALS",2)
+THEN
+	RESPONSE #100
+		SetGlobal("qd_morte_teeth_upgrade","LOCALS",3)
+		TakeItemReplace("QDMBITE3","QDMBITE2",Myself)
+		SmallWait(1)
+		Continue()
+END 
+
+IF 
+	LevelGT(Myself,7)
+	Global("qd_morte_teeth_upgrade","LOCALS",0)
+THEN
+	RESPONSE #100
+		SetGlobal("qd_morte_teeth_upgrade","LOCALS",2)
+		TakeItemReplace("QDMBITE2","MBITE",Myself)
+		SmallWait(1)
+		Continue()
+END 
+
+IF 
+	LevelGT(Myself,7)
+	Global("qd_morte_teeth_upgrade","LOCALS",1)
+THEN
+	RESPONSE #100
+		SetGlobal("qd_morte_teeth_upgrade","LOCALS",2)
+		TakeItemReplace("QDMBITE2","QDMBITE1",Myself)
+		SmallWait(1)
+		Continue()
+END
+
+IF 
+	LevelGT(Myself,3)
+	Global("qd_morte_teeth_upgrade","LOCALS",0)
+THEN
+	RESPONSE #100
+		SetGlobal("qd_morte_teeth_upgrade","LOCALS",1)
+		TakeItemReplace("QDMBITE1","MBITE",Myself)
+		SmallWait(1)
+		Continue()
+END 
+
+IF 
+	Global("qd_morte_teeth_viper","LOCALS",1)
+THEN
+	RESPONSE #100 
+		SetGlobal("qd_morte_teeth_viper","LOCALS",2)
+		AddSpecialAbility("QDUNDM4")
+END 
+
+
+//Ripped from death.2da 
+//grace and vhailor aren't necessary because they have death lines
+IF 
+	PartyMemberDied("Annah") 
+	!StateCheck("Morte", CD_STATE_NOTVALID)
+	Global("qd_morte_party","GLOBAL",1)
+	OR(2) 
+		Global("qd_nordom_party","GLOBAL",0)
+		StateCheck("Nordom", CD_STATE_NOTVALID)
+	OR(2)
+		!InParty("Grace")
+		StateCheck("Grace", CD_STATE_NOTVALID)
+	
+THEN
+	RESPONSE #100
+		PlaySound("MRT181")
+		Continue()
+END 
+
+IF 
+	PartyMemberDied("Dakkon") 
+	!StateCheck("Morte", CD_STATE_NOTVALID)
+	Global("qd_morte_party","GLOBAL",1)
+	OR(2) 
+		Global("qd_nordom_party","GLOBAL",0)
+		StateCheck("Nordom", CD_STATE_NOTVALID)
+	OR(2)
+		!InParty("Annah")
+		StateCheck("Annah", CD_STATE_NOTVALID)
+	OR(2)
+		!InParty("Grace")
+		StateCheck("Grace", CD_STATE_NOTVALID)
+	
+THEN
+	RESPONSE #100
+		PlaySound("MRT183")
+		Continue()
+END 
+
+IF 
+	PartyMemberDied("Ignus")  
+	!StateCheck("Morte", CD_STATE_NOTVALID)
+	Global("qd_morte_party","GLOBAL",1)
+	OR(2) 
+		Global("qd_nordom_party","GLOBAL",0)
+		StateCheck("Nordom", CD_STATE_NOTVALID)
+	OR(2)
+		!InParty("Annah")
+		StateCheck("Annah", CD_STATE_NOTVALID)
+	OR(2)
+		!InParty("Grace")
+		StateCheck("Grace", CD_STATE_NOTVALID)
+THEN
+	RESPONSE #10
+		PlaySound("MRT187")
+		Continue()
+	RESPONSE #10
+		PlaySound("MRT188")
+		Continue()
+	RESPONSE #10
+		PlaySound("MRT189")
+		Continue()
+	RESPONSE #10
+		PlaySound("MRT190")
+		Continue()
+	RESPONSE #10
+		PlaySound("MRT191")
+		Continue()
+	RESPONSE #10
+		PlaySound("MRT193")
+		Continue()
+END 
+
+IF 
+	Died("Nordom") 
+	!StateCheck("Morte", CD_STATE_NOTVALID)
+	Global("qd_morte_party","GLOBAL",1)
+	OR(2)
+		!InParty("Grace")
+		StateCheck("Grace", CD_STATE_NOTVALID)
+THEN
+	RESPONSE #100
+		PlaySound("MRT185")
+		Continue()
 END 
