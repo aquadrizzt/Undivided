@@ -7,26 +7,39 @@ AUTO_TRA ~Undivided/tra/%s~
 LANGUAGE ~English~ ~english~ ~Undivided/tra/english/setup.tra~
 
 // ========================================================
-// MAIN COMPONENT
+// MORTE
 // -----------------------------
 // Contents:
-// - Make Nordom and Morte follow the party but not use the party interface. 
+// - Make Morte follow the party but not use the party interface. 
+// - Morte automatically levels up with TNO. 
+// - Morte interjects when possible.
+// -----------------------------
+// Future Updates: 
+// - Allowing Morte to equip Teeth found throughout the game.
+// - Allowing Morte to comment on party member deaths.
+// - Allowing Morte to banter with party members. 
 // ========================================================
 
-BEGIN @0
+BEGIN @1
 
 COPY ~Undivided/data/qd_und1.itm~ ~override~ //min HP = 1; clear fog of war
      ~Undivided/data/qdundm1.spl~ ~override~ //morte: prot from enemies
 	 ~Undivided/data/qdundm2.spl~ ~override~ //morte: +1 hp and remove m1
 	 ~Undivided/data/qdundm3.spl~ ~override~ //morte: levelup heal
-	 ~Undivided/data/qdundm5.spl~ ~override~ //morte: vipers bite give
+	// ~Undivided/data/qdundm5.spl~ ~override~ //morte: vipers bite give
 
-COPY ~Undivided/data/qdundm4.spl~ ~override~ //Bite of the Viper ability
-	SAY NAME1 @23
-	SAY UNIDENTIFIED_DESC @24  
-	
-ADD_SPELL ~override/qdundm4.spl~ 3 1 INNATE_MORTE_VIPER_BITE
-ADD_SPELL ~override/qdundm5.spl~ 3 0 SPECIAL_QD_GAIN_VIPER_BITE
+	/*
+		COPY ~Undivided/data/qdundm4.spl~ ~override~ //Bite of the Viper ability
+			SAY NAME1 @23
+			SAY UNIDENTIFIED_DESC @24  
+			
+		ADD_SPELL ~override/qdundm4.spl~ 3 1 INNATE_MORTE_VIPER_BITE
+		ADD_SPELL ~override/qdundm5.spl~ 3 0 SPECIAL_QD_GAIN_VIPER_BITE*/
+		
+//slight change to UI to enable morte and nordom to use their weapons
+COPY_EXISTING ~ui.menu~ ~override~ 
+	REPLACE_TEXTUALLY ~enabled "buttonArray:GetButtonEnabled(0)"~ ~~
+
 //adding min HP and exploration to Morte 
 COPY_EXISTING ~morte.cre~ ~override~ 
 	ADD_CRE_ITEM ~qd_und1~ #0 #0 #0 ~NONE~ ~LRING RRING~ EQUIP
@@ -38,10 +51,6 @@ COPY_EXISTING ~mortef.cre~ ~override~
 	ADD_CRE_ITEM ~qd_und1~ #0 #0 #0 ~NONE~ ~LRING RRING~ EQUIP 
 	
 EXTEND_BOTTOM ~pcmorte.bcs~ ~Undivided/data/qd_und_morte.baf~ 
-
-//slight change to UI to enable morte and nordom to use their weapons
-COPY_EXISTING ~ui.menu~ ~override~ 
-	REPLACE_TEXTUALLY ~enabled "buttonArray:GetButtonEnabled(0)"~ ~~
 	
 //Updating script checks for morte 
 COPY_EXISTING_REGEXP ~.*\.bcs~ ~override~ 
@@ -196,7 +205,8 @@ COPY ~Undivided/data/qdmbite3.itm~ ~override~ //level12 teeth upgrade
 COPY_EXISTING ~mbite.itm~ ~override~ //slight description change 
 	SAY IDENTIFIED_DESC @16
 	SAY UNIDENTIFIED_DESC @16 
-	
+
+	/*
 //changes to teeth and acquisition methods 
 COPY ~Undivided/data/qdingtth.itm~ ~override~ //ingress' teeth
 	SAY NAME1 @17
@@ -221,6 +231,7 @@ COPY_EXISTING ~marta.sto~ ~override~
 	
 COPY_EXISTING ~vris.sto~ ~override~ 
 	LPF REPLACE_STORE_ITEM INT_VAR number_in_stock = 1 STR_VAR old_item = ~FDTEETH~ new_item = ~QDFDTTH~ flags = ~IDENTIFIED~ END 
-	
-// Minor dialog patches to Nordom and Morte
-COMPILE ~Undivided/data/qd_und_patch.d~
+*/ 
+
+// Minor dialog patches to Morte
+COMPILE ~Undivided/data/qd_und_morte_dlg.d~
