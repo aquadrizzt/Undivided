@@ -1,4 +1,5 @@
-@0 = ~Undivided~
+@1 = ~Undivided: Morte~
+@2 = ~Undivided: Nordom~
 
 @10 = ~Global("qd_morte_party","GLOBAL",1)~ 
 @11 = ~Global("qd_nordom_party","GLOBAL",1)~
@@ -104,3 +105,5 @@ When activated, Morte bites a nearby enemy and strike for 2-8 hit points of acid
 @116 = ~"Glad you like them, Morte. Let's go."~ 
 
 @117 = ~Morte recoils in mild disgust. "I can practically smell the brimstone from *here*, and I don't even have a nose. I hope this doesn't dissuade all of the on-looking ladies."~ 
+
+@201 = ~"Tactical retreat, activated."~
