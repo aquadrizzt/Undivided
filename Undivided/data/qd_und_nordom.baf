@@ -1,0 +1,17 @@
+//Play Dead if reduced to 1 HP 
+IF 
+	HP(Myself,1)
+	ActuallyInCombat()
+	Global("qd_nordom_party","GLOBAL",1)
+THEN
+	RESPONSE #100
+		DisplayString(Myself,@201)  // "Tactical retreat, activated."
+		StickySinisterPoof("EF02TPR2",Myself,-1)
+		SmallWait(50)
+		SetGlobal("qd_nordom_party","GLOBAL",0) 
+		RemoveFamiliar() 
+		ChangeEnemyAlly("Nordom",NEUTRAL)
+		MoveGlobal("AR13FY",Myself,[668.443])  // Modron Foyer
+		Continue()
+END 
+
