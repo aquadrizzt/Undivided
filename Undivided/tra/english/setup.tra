@@ -1,5 +1,6 @@
-@1 = ~Undivided: Morte~
-@2 = ~Undivided: Nordom~
+@1 = ~Make Morte a Follower~
+@2 = ~Make Nordom a Follower~
+@3 = ~Required Updates~ 
 
 @10 = ~Global("qd_morte_party","GLOBAL",1)~ 
 @11 = ~Global("qd_nordom_party","GLOBAL",1)~
@@ -107,3 +108,6 @@ When activated, Morte bites a nearby enemy and strike for 2-8 hit points of acid
 @117 = ~Morte recoils in mild disgust. "I can practically smell the brimstone from *here*, and I don't even have a nose. I hope this doesn't dissuade all of the on-looking ladies."~ 
 
 @201 = ~"Tactical retreat, activated."~
+@202 = ~"Request acknowledged. Activating standby mode."~
+@203 = ~"See you later, Nordom."~
+@204 = ~"I think we should split up for now, Nordom."~
