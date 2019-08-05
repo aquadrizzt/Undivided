@@ -1,0 +1,42 @@
+//Teleport to TNO if in party during TeleportParty 
+IF 
+	ReceivedOrder(Myself,66) 
+	Global("qd_vhailor_party","GLOBAL",1)
+THEN
+	RESPONSE #100 
+		MoveGlobalObject("Vhail",Protagonist)
+		Continue()
+END 
+
+//Play Dead if reduced to 1 HP and currently following TNO 
+IF 
+	HP(Myself,1)
+	Global("qd_vhailor_play_dead","LOCALS",0)
+	Global("qd_vhailor_party","GLOBAL",1)
+	Allegiance(Myself,FAMILIAR)
+THEN
+	RESPONSE #100
+		SetGlobal("qd_vhailor_play_dead","LOCALS",1)
+		PlaySound("VHA040")
+		SetSequence(SEQ_DIE)
+		ApplySpellRES("QDUNDV1",Myself)
+		ChangeEnemyAlly(Myself, NEUTRAL)
+		Continue() 
+END 
+
+//Wake up from Playing Dead if No Enemies in Sight 
+IF 
+	!ActuallyInCombat()
+	Global("qd_vhailor_play_dead","LOCALS",1)
+	Global("qd_vhailor_party","GLOBAL",1)
+	
+THEN
+	RESPONSE #100
+		Wait(5)
+		SetGlobal("qd_vhailor_play_dead","LOCALS",0)
+		SetSequence(ANIM_GETUP)
+		ApplySpellRES("QDUNDV2",Myself)
+		Wait(1)
+		ChangeEnemyAlly(Myself, FAMILIAR)
+		Continue() 
+END 

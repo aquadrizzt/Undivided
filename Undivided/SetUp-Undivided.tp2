@@ -1,128 +1,137 @@
 BACKUP ~Undivided/backup~
 AUTHOR ~aquadrizzt@gmail.com~
-VERSION ~0.0~ 
+VERSION ~0.0a~ 
 
 /* Language Settings */
 AUTO_TRA ~Undivided/tra/%s~
 LANGUAGE ~English~ ~english~ ~Undivided/tra/english/setup.tra~
 
 // ========================================================
-// MORTE
+// VHAILOR
 // -----------------------------
 // Contents:
-// - Make Morte follow the party but not use the party interface. 
-// - Morte automatically levels up with TNO. 
-// - Morte interjects when possible.
+// - Make Vhailor follow the party but not use the party interface. 
+// - Vhailor automatically levels up with TNO. 
+// - Vhailor interjects when possible.
 // -----------------------------
 // Future Updates: 
-// - Allowing Morte to equip Teeth found throughout the game.
-// - Allowing Morte to comment on party member deaths.
-// - Allowing Morte to banter with party members. 
+// - Allowing Vhailor to comment on party member deaths.
+// - Allowing Vhailor to banter with party members. 
 // ========================================================
 
-BEGIN @1
+BEGIN @100 
 
-COPY_EXISTING ~aclue.itm~ ~override/qd_und_morte.qd~ //check file for this component 
+COPY_EXISTING ~aclue.itm~ ~override/qd_und_vhailor.qd~ //check file for this component 
 
-COPY ~Undivided/data/qd_und1.itm~ ~override~ //min HP = 1; clear fog of war
-     ~Undivided/data/qdundm1.spl~ ~override~ //morte: prot from enemies
-	 ~Undivided/data/qdundm2.spl~ ~override~ //morte: +1 hp and remove m1
-	 ~Undivided/data/qdundm3.spl~ ~override~ //morte: levelup heal
+COPY ~Undivided/data/qd_und1.itm~ ~override~ //min HP = 1; fog of war on 
+	 // ~Undivided/data/qd_und2.itm~ ~override~ //fog of war on (only equip while in party)
+     ~Undivided/data/qdundm1.spl~ ~override/qdundv1.spl~ //vhailor: prot from enemies and disable
+	 ~Undivided/data/qdundm2.spl~ ~override/qdundv2.spl~ //vhailor: +1 hp and remove v1
+	 ~Undivided/data/qdundm3.spl~ ~override/qdundv3.spl~ //vhailor: levelup heal
 		
-//slight change to UI to enable morte and nordom to use their weapons
+//slight change to UI to enable vhailor to attack
 COPY_EXISTING ~ui.menu~ ~override~ 
 	REPLACE_TEXTUALLY ~enabled "buttonArray:GetButtonEnabled(0)"~ ~~
+BUT_ONLY
 
-//adding min HP and exploration to Morte 
-COPY_EXISTING ~morte.cre~ ~override~ 
-	ADD_CRE_ITEM ~qd_und1~ #0 #0 #0 ~NONE~ ~LRING RRING~ EQUIP
+//adding min HP and exploration to Vhailor 
+/*
+COPY_EXISTING ~vhail.cre~ ~override~ 
+	ADD_CRE_ITEM ~qd_und1~ #0 #0 #0 ~NONE~ ~RRING~ EQUIP
 
-COPY_EXISTING ~morteeg.cre~ ~override~ 
-	ADD_CRE_ITEM ~qd_und1~ #0 #0 #0 ~NONE~ ~LRING RRING~ EQUIP
+COPY_EXISTING ~vhaileg.cre~ ~override~ 
+	ADD_CRE_ITEM ~qd_und1~ #0 #0 #0 ~NONE~ ~RRING~ EQUIP
+*/ 	
+EXTEND_BOTTOM ~pcvhail.bcs~ ~Undivided/data/qd_und_vhailor.baf~ 
 	
-COPY_EXISTING ~mortef.cre~ ~override~ 
-	ADD_CRE_ITEM ~qd_und1~ #0 #0 #0 ~NONE~ ~LRING RRING~ EQUIP 
-	
-EXTEND_BOTTOM ~pcmorte.bcs~ ~Undivided/data/qd_und_morte.baf~ 
-	
-//Updating script checks for morte 
+//Updating script checks for Vhailor 
 COPY_EXISTING_REGEXP ~.*\.bcs~ ~override~ 
 	DECOMPILE_AND_PATCH BEGIN 
-		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH ~ActionOverride("Morte",JoinPartyEx(TRUE))~ ~SetGlobal("qd_morte_party","GLOBAL",1) ActionOverride("Morte",AddFamiliar()) 		ChangeEnemyAlly("Morte",FAMILIAR)~ 
-		// REPLACE_TEXTUALLY CASE_INSENSITIVE EVALUATE_REGEXP ~TeleportParty("\(AR[0-9]*\)",\[\([0-9]*\)\.\([0-9]*\)\],\([0-9]*\))~ ~ TeleportParty("\1",[\2.\3],\4) MoveGlobal("\1","Morte",[\2.\3])~ 
-		REFACTOR_TRIGGER CASE_INSENSITIVE EXACT_MATCH ~InParty("Morte")~ ~Global("qd_morte_party","GLOBAL",1)~ 
+		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH ~ActionOverride("Vhail",JoinPartyEx(TRUE))~ ~ActionOverride("Vhail",AddFamiliar()) ChangeEnemyAlly("Vhail",FAMILIAR) AddFamiliar() ApplySpellRES("QDUNDV2",Myself) GiveItemCreate("qd_und1",Myself,1,0,0) XEquipItem("qd_und1","vhail",SLOT_RING_LEFT,1) SetGlobal("Vhailor_Join","GLOBAL",1) SetGlobal("qd_vhailor_party","GLOBAL",1) ActionOverride(Protagonist,DestroyItem("qd_und1"))~ 
+		// REPLACE_TEXTUALLY CASE_INSENSITIVE EVALUATE_REGEXP ~TeleportParty("\(AR[0-9]*\)",\[\([0-9]*\)\.\([0-9]*\)\],\([0-9]*\))~ ~ TeleportParty("\1",[\2.\3],\4) GiveOrder(Protagonist,66)~ 
+		REFACTOR_TRIGGER CASE_INSENSITIVE EXACT_MATCH ~InParty("Vhail")~ ~Global("qd_vhailor_party","GLOBAL",1)~ 
 	END 
 BUT_ONLY 
 
-//Morte will use Party AI as appropriate
-COPY_EXISTING ~pcmorte.bcs~ ~override~
+//Vhailor will use Party AI as appropriate
+COPY_EXISTING ~pcvhail.bcs~ ~override~
 	DECOMPILE_AND_PATCH BEGIN 
-		REFACTOR_TRIGGER CASE_INSENSITIVE EXACT_MATCH ~InParty(Myself)~ ~Global("qd_morte_party","GLOBAL",1)~ 
+		REFACTOR_TRIGGER CASE_INSENSITIVE EXACT_MATCH ~InParty(Myself)~ ~Global("qd_vhailor_party","GLOBAL",1)~ 
 	END 
 BUT_ONLY 
 
-<<<<<<<< QD/morte_move.baf
+//Delete original Vhailor spawn from Curst Prison 
+COPY_EXISTING ~ar0702.are~ ~override~
+	LPF fj_are_structure
+		INT_VAR 
+			fj_delete_mode 	  = 7
+		STR_VAR
+			fj_structure_type = actor
+	END
+	
+//add Vhailor to somewhere hidden in starting area 
+COPY_EXISTING ~ar0202.are~ ~override~
+	LPF fj_are_structure
+		INT_VAR
+			fj_loc_x          = 2180
+			fj_loc_y          = 2531
+		STR_VAR
+			fj_structure_type = actor
+			fj_cre_resref     = vhail
+	END
+	
+//makes vhailor a global creature and then teleports him to his actual spawn location
+<<<<<<<< QD/vhailor_move.baf
+IF
+	!Global("qd_vhailor_global","GLOBAL",1)
+THEN
+	RESPONSE #100
+		SetGlobal("qd_vhailor_global","GLOBAL",1)
+		ActionOverride("Vhail",MakeGlobalOverride())
+		Continue()
+END
+
 IF 
-	!InActiveArea("Morte")
-	Global("qd_morte_party","GLOBAL",1) 
+	!Global("qd_vhailor_moved","GLOBAL",1) 
+	Global("qd_vhailor_global","GLOBAL",1) 
 THEN 
 	RESPONSE #100 
-		MoveGlobalObject("Morte",Protagonist)
+		SetGlobal("qd_vhailor_moved","GLOBAL",1) 
+		MoveGlobal("AR0702","Vhail",[4647.454])
+		Continue()
+END 
+
+// this script should shift Vhailor to the location of the protagonist outside of player-exclusive zones
+IF 
+	!AreaCheckObject("AR1200",Protagonist)
+	!AreaCheckObject("AR1201",Protagonist)
+	!AreaCheckObject("AR1202",Protagonist)
+	!AreaCheckObject("AR1203",Protagonist)
+	!AreaCheckObject("AR1800",Protagonist)
+	!AreaCheckObject("AR1900",Protagonist)
+	!InActiveArea("Vhail")
+	Global("qd_vhailor_party","GLOBAL",1) 
+	Global("qd_vhailor_global","GLOBAL",1)
+	Global("qd_vhailor_maze","GLOBAL",0)
+THEN 
+	RESPONSE #100 
+		MoveGlobalObject("Vhail",Protagonist)
 		Continue()
 END 
 >>>>>>>> 
 
-EXTEND_TOP ~baldur.bcs~ ~QD/morte_move.baf~ 
-
-//Updating Morte's abduction script 
-COPY_EXISTING ~stlmrt3.bcs~ ~override~
-	DECOMPILE_AND_PATCH BEGIN 
-		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH ~LeaveParty()~ ~SetGlobal("qd_morte_party","GLOBAL",0) RemoveFamiliar()
-		ChangeEnemyAlly(Myself,NEUTRAL)~ 
-	END 
-BUT_ONLY 
-
-//Lothar morte escape cutscene
-COPY_EXISTING ~0500mrte.bcs~ ~override~
-	DECOMPILE_AND_PATCH BEGIN 
-		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH ~JoinPartyEx(TRUE)~ ~SetGlobal("qd_morte_party","GLOBAL",1) ActionOverride("Morte",AddFamiliar()) 		ChangeEnemyAlly("Morte",FAMILIAR)~ 
-	END 
-BUT_ONLY 
-
-//Pillar and morte
-COPY_EXISTING ~1001cut1.bcs~ ~override~
-	DECOMPILE_AND_PATCH BEGIN 
-		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH ~LeaveParty()~ ~SetGlobal("qd_morte_party","GLOBAL",0) RemoveFamiliar()
-		ChangeEnemyAlly(Myself,NEUTRAL)~ 
-	END 
-BUT_ONLY 
-
-COPY_EXISTING ~1001ct3b.bcs~ ~override~
-	DECOMPILE_AND_PATCH BEGIN 
-		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH ~JoinPartyEx(TRUE)~ ~SetGlobal("qd_morte_party","GLOBAL",1) AddFamiliar()		ChangeEnemyAlly("Morte",FAMILIAR)~ 
-	END 
-BUT_ONLY 
-
-//Updates Fell's tattoos with new party checks. 
-COPY_EXISTING ~fell.sto~ ~override~
-	GET_OFFSET_ARRAY tattoos 0x34 4 0x38 4 0 0 0x58 
-	PHP_EACH tattoos AS int => tt_off BEGIN 
-		READ_ASCII tt_off itmres
-		PATCH_IF (~%itmres%~ STRING_EQUAL_CASE ~ttmorte1~) BEGIN 
-			WRITE_LONG (tt_off + 0x1c) RESOLVE_STR_REF(@10) 
-		END 
-	END 
+EXTEND_BOTTOM ~baldur.bcs~ ~QD/vhailor_move.baf~ 
 
 //generating xp progression script for morte 	
-<<<<<<<< QD/morte_leveling.baf
+<<<<<<<< QD/vhailor_leveling.baf
 	IF
-		Global("qd_morte_party","GLOBAL",1)
+		Global("qd_vhailor_party","GLOBAL",1)
 		XPGT(Protagonist,%xp%)
 		XPLT(Protagonist,%xp_next%)
-		!Level(Myself,%lvl%)
+		LevelLT(Myself,%lvl%)
 	THEN	
 		RESPONSE #100 
-			SetGlobal("qd_morte_level","GLOBAL",%lvl%)
+			SetGlobal("qd_vhailor_level","GLOBAL",%lvl%)
 			ChangeStat(Myself,LEVEL,%lvl%,SET)
 			ChangeStat(Myself,MAXHITPOINTS,%hp%,SET)
 			ChangeStat(Myself,SAVEVSDEATH,%sv_d%,SET)
@@ -130,20 +139,20 @@ COPY_EXISTING ~fell.sto~ ~override~
 			ChangeStat(Myself,SAVEVSPOLY,%sv_p%,SET)
 			ChangeStat(Myself,SAVEVSBREATH,%sv_b%,SET)
 			ChangeStat(Myself,SAVEVSSPELL,%sv_s%,SET)
-			PlaySound("MRT199")
-			ApplySpellRES("QDUNDM3",Myself)
+			PlaySound("VHA111")
+			ApplySpellRES("QDUNDV3",Myself)
 			Continue() 
 	END 
 >>>>>>>>
 
-<<<<<<<< QD/morte_leveling_max.baf
+<<<<<<<< QD/vhailor_leveling_max.baf
 	IF
-		Global("qd_morte_party","GLOBAL",1)
+		Global("qd_vhailor_party","GLOBAL",1)
 		XPGT(Protagonist,%xp%)
-		!Level(Myself,%lvl%)
+		LevelLT(Myself,%lvl%)
 	THEN	
 		RESPONSE #100 
-			SetGlobal("qd_morte_level","GLOBAL",%lvl%)
+			SetGlobal("qd_vhailor_level","GLOBAL",%lvl%)
 			ChangeStat(Myself,LEVEL,%lvl%,SET)
 			ChangeStat(Myself,MAXHITPOINTS,%hp%,SET)
 			ChangeStat(Myself,SAVEVSDEATH,%sv_d%,SET)
@@ -151,8 +160,8 @@ COPY_EXISTING ~fell.sto~ ~override~
 			ChangeStat(Myself,SAVEVSPOLY,%sv_p%,SET)
 			ChangeStat(Myself,SAVEVSBREATH,%sv_b%,SET)
 			ChangeStat(Myself,SAVEVSSPELL,%sv_s%,SET)
-			PlaySound("MRT199")
-			ApplySpellRES("QDUNDM3",Myself)
+			PlaySound("VHA111")
+			ApplySpellRES("QDUNDV3",Myself)
 			Continue() 
 	END 
 >>>>>>>>
@@ -176,7 +185,7 @@ COPY_EXISTING ~XPLEVEL.2DA~ ~override~
 				READ_2DA_ENTRY 4 col save_cols spell
 			ACTION_IF (col < 20) THEN BEGIN 
 				ACTION_IF (col < 10) THEN BEGIN 
-					EXTEND_BOTTOM ~pcmorte.bcs~ ~QD/morte_leveling.baf~ 
+					EXTEND_BOTTOM ~pcvhail.bcs~ ~QD/vhailor_leveling.baf~ 
 						prev = (%col%)-1
 						lvl = (%col%)
 						xp = (%xp%)
@@ -190,7 +199,7 @@ COPY_EXISTING ~XPLEVEL.2DA~ ~override~
 					EVAL 
 				END 
 				ELSE BEGIN 
-					EXTEND_BOTTOM ~pcmorte.bcs~ ~QD/morte_leveling.baf~ 
+					EXTEND_BOTTOM ~pcvhail.bcs~ ~QD/vhailor_leveling.baf~ 
 						lvl = (%col%)
 						xp = (%xp%)
 						xp_next = (%xp_next%)
@@ -204,7 +213,7 @@ COPY_EXISTING ~XPLEVEL.2DA~ ~override~
 				END 
 			END 
 			ELSE BEGIN 
-				EXTEND_BOTTOM ~pcmorte.bcs~ ~QD/morte_leveling_max.baf~ 
+				EXTEND_BOTTOM ~pcvhail.bcs~ ~QD/vhailor_leveling_max.baf~ 
 					prev = (%col%)-1
 					lvl = (%col%)
 					xp = (%xp%)
@@ -219,309 +228,87 @@ COPY_EXISTING ~XPLEVEL.2DA~ ~override~
 		END 
 	END 
 
-//morte teeth progression 
-COPY ~Undivided/data/qdmbite1.itm~ ~override~ //level4 teeth upgrade 
-	SAY NAME1 @12
-	SAY NAME2 @12
-	SAY IDENTIFIED_DESC @13 
-	SAY UNIDENTIFIED_DESC @13 
-	
-COPY ~Undivided/data/qdmbite2.itm~ ~override~ //level8 teeth upgrade 
-	SAY NAME1 @12
-	SAY NAME2 @12 
-	SAY IDENTIFIED_DESC @14
-	SAY UNIDENTIFIED_DESC @14
-	
-COPY ~Undivided/data/qdmbite3.itm~ ~override~ //level12 teeth upgrade 
-	SAY NAME1 @12
-	SAY NAME2 @12 
-	SAY IDENTIFIED_DESC @15
-	SAY UNIDENTIFIED_DESC @15 
-	
-COPY_EXISTING ~mbite.itm~ ~override~ //slight description change 
-	SAY IDENTIFIED_DESC @16
-	SAY UNIDENTIFIED_DESC @16 
-
-// Minor dialog patches to Morte
-COMPILE ~Undivided/data/qd_und_morte_dlg.d~
+// Minor dialog patches to Vhailor
+COMPILE ~Undivided/data/qd_und_vhailor_dlg.d~
 
 //Tomb of the Nameless One removal and Drowned Nations rejoin
-<<<<<<<< QD/1800_tomb_morte.baf
+<<<<<<<< QD/1800_tomb_vhailor.baf
 IF
-	Global("qd_morte_party","GLOBAL",1)
+	Global("qd_vhailor_party","GLOBAL",1)
 THEN
 	RESPONSE #100
-		SetGlobal("qd_morte_party","GLOBAL",0)
-		SetGlobal("qd_morte_tomb","GLOBAL",1)
-		ActionOverride("Morte",RemoveFamiliar())
-		ChangeEnemyAlly("Morte",NEUTRAL)  // Morte - Talking Skull
+		SetGlobal("qd_vhailor_party","GLOBAL",0)
+		SetGlobal("qd_vhailor_tomb","GLOBAL",1)
+		ActionOverride("Vhail",RemoveFamiliar())
+		ChangeEnemyAlly("Vhail",NEUTRAL)  
 		Continue()
 END
 
 IF
-	Global("qd_morte_tomb","GLOBAL",1)
+	Global("qd_vhailor_tomb","GLOBAL",1)
 THEN
 	RESPONSE #100 
-		SetGlobal("qd_morte_tomb","GLOBAL",0)
-		ActionOverride("Morte",MoveGlobal("AR1700",Myself,[4000.2600]))
+		SetGlobal("qd_vhailor_tomb","GLOBAL",0)
+		ActionOverride("Vhail",MoveGlobal("AR1700",Myself,[4000.2600]))
 		Continue()
 END 
 >>>>>>>> 
 
-EXTEND_BOTTOM ~ar1800.bcs~ ~QD/1800_tomb_morte.baf~ 
+EXTEND_BOTTOM ~ar1800.bcs~ ~QD/1800_tomb_vhailor.baf~ 
 
 COPY_EXISTING ~ar1700.bcs~ ~override~
 	DECOMPILE_AND_PATCH BEGIN 
-		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH ~ActionOverride("Morte",JoinPartyEx(TRUE))~ ~SetGlobal("qd_morte_party","GLOBAL",1) ActionOverride("Morte",AddFamiliar()) 		ChangeEnemyAlly("Morte",FAMILIAR)~ 
+		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH ~ActionOverride("Vhail",JoinPartyEx(TRUE))~ ~SetGlobal("qd_vhailor_party","GLOBAL",1) ActionOverride("Vhail",AddFamiliar()) 		ChangeEnemyAlly("Vhail",FAMILIAR)~ 
 	END 
 BUT_ONLY 
 
-/*
-EXTEND_TOP ~ar1900.bcs~ ~QD/1900_maze_morte.baf~ 
-
-<<<<<<<< QD/1900_maze_morte.baf
+//Player's Maze and teleport rejoin 
+<<<<<<<< QD/1900_maze_vhailor.baf
 IF
-	Global("Current_Area","GLOBAL",%area%)
-	Global("qd_morte_party","GLOBAL",1)
-	Global("qd_morte_maze","GLOBAL",0)
+	Global("qd_vhailor_party","GLOBAL",1)
 THEN
 	RESPONSE #100
-		SetGlobal("qd_morte_party","GLOBAL",0)
-		SetGlobal("qd_morte_maze","GLOBAL",%area%)
-		ActionOverride("Morte",RemoveFamiliar())
-		ChangeEnemyAlly("Morte",NEUTRAL)  // Morte - Talking Skull
+		SetGlobal("qd_vhailor_party","GLOBAL",0)
+		SetGlobal("qd_vhailor_maze","GLOBAL",1)
+		ActionOverride("Vhail",RemoveFamiliar())
+		ChangeEnemyAlly("Vhail",NEUTRAL)  
 		Continue()
 END
 
 IF
-	Global("qd_morte_maze","GLOBAL",%area%)
+	Global("qd_vhailor_maze","GLOBAL",1)
 THEN
 	RESPONSE #100 
-		SetGlobal("qd_morte_tomb","GLOBAL",0)
-		ActionOverride("Morte",MoveGlobal("%areaname%",Myself,[%xcoord%.%ycoord%]))
-		Continue()
-END 
->>>>>>>> 
-*/
-
-
-
-
-
-// ========================================================
-// NORDOM
-// -----------------------------
-// Contents:
-// - Make Nordom follow the party but not use the party interface. 
-// - Nordom automatically levels up with TNO. 
-// - Nordom interjects when possible.
-// -----------------------------
-// Future Updates: 
-// - Allowing Nordom to equip Lens/Bolts found throughout the game.
-// - Allowing Nordom to banter with party members. 
-// - Allowing Nordom to comment on party member deaths.
-// ========================================================
-
-BEGIN @2
-
-COPY_EXISTING ~aclue.itm~ ~override/qd_und_nordom.qd~ //check file for this component 
-
-COPY ~Undivided/data/qd_und1.itm~ ~override~ //min HP = 1; clear fog of war
-	 ~Undivided/data/qdundm3.spl~ ~override~ //nordom: levelup heal
-
-//slight change to UI to enable morte and nordom to use their weapons
-COPY_EXISTING ~ui.menu~ ~override~ 
-	REPLACE_TEXTUALLY ~enabled "buttonArray:GetButtonEnabled(0)"~ ~~
-	
-//adding min HP and exploration to Morte 
-COPY_EXISTING ~nordom.cre~ ~override~ 
-	ADD_CRE_ITEM ~qd_und1~ #0 #0 #0 ~NONE~ ~LRING RRING~ EQUIP
-
-COPY_EXISTING ~nordomeg.cre~ ~override~ 
-	ADD_CRE_ITEM ~qd_und1~ #0 #0 #0 ~NONE~ ~LRING RRING~ EQUIP
-	
-COPY_EXISTING ~nordomf.cre~ ~override~ 
-	ADD_CRE_ITEM ~qd_und1~ #0 #0 #0 ~NONE~ ~LRING RRING~ EQUIP 
-	
-EXTEND_BOTTOM ~pcnordom.bcs~ ~Undivided/data/qd_und_nordom.baf~ 
-
-// Minor dialog patches to Nordom
-COMPILE ~Undivided/data/qd_und_nordom_dlg.d~
-
-//Updating script checks for nordom 
-COPY_EXISTING_REGEXP ~.*\.bcs~ ~override~ 
-	DECOMPILE_AND_PATCH BEGIN 
-		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH ~ActionOverride("Nordom",JoinPartyEx(TRUE))~ ~SetGlobal("qd_nordom_party","GLOBAL",1) ActionOverride("Nordom",AddFamiliar()) 		ChangeEnemyAlly("Nordom",FAMILIAR)~ 
-		//REPLACE_TEXTUALLY CASE_INSENSITIVE EVALUATE_REGEXP ~TeleportParty("\(AR[0-9]*\)",\[\([0-9]*\)\.\([0-9]*\)\],\([0-9]*\))~ ~ TeleportParty("\1",[\2.\3],\4) MoveGlobal("\1","Nordom",[\2.\3])~
-		REFACTOR_TRIGGER CASE_INSENSITIVE EXACT_MATCH ~InParty("Nordom")~ ~Global("qd_nordom_party","GLOBAL",1)~ 
-	END 
-BUT_ONLY 
-
-//Nordom will use Party AI as appropriate
-COPY_EXISTING ~pcnordom.bcs~ ~override~
-	DECOMPILE_AND_PATCH BEGIN 
-		REFACTOR_TRIGGER CASE_INSENSITIVE EXACT_MATCH ~InParty(Myself)~ ~Global("qd_nordom_party","GLOBAL",1)~ 
-	END 
-BUT_ONLY 
-
-<<<<<<<< QD/nordom_move.baf
-IF 
-	!InActiveArea("Nordom")
-	Global("qd_nordom_party","GLOBAL",1) 
-THEN 
-	RESPONSE #100 
-		MoveGlobalObject("Nordom",Protagonist)
+		SetGlobal("qd_vhailor_maze","GLOBAL",0)
+		ActionOverride("Vhail",MoveGlobal("AR1700",Myself,[4000.2600]))
 		Continue()
 END 
 >>>>>>>> 
 
-EXTEND_TOP ~baldur.bcs~ ~QD/nordom_move.baf~ 
+EXTEND_TOP ~1900name.bcs~ ~QD/1900_maze_vhailor.baf~ 
 
-
-//generating xp progression script for nordom 	
-<<<<<<<< QD/nordom_leveling.baf
-	IF
-		Global("qd_nordom_party","GLOBAL",1)
-		XPGT(Protagonist,%xp%)
-		XPLT(Protagonist,%xp_next%)
-		!Level(Myself,%lvl%)
-	THEN	
-		RESPONSE #100 
-			SetGlobal("qd_nordom_level","GLOBAL",%lvl%)
-			ChangeStat(Myself,LEVEL,%lvl%,SET)
-			ChangeStat(Myself,MAXHITPOINTS,%hp%,SET)
-			ChangeStat(Myself,SAVEVSDEATH,%sv_d%,SET)
-			ChangeStat(Myself,SAVEVSWANDS,%sv_w%,SET)
-			ChangeStat(Myself,SAVEVSPOLY,%sv_p%,SET)
-			ChangeStat(Myself,SAVEVSBREATH,%sv_b%,SET)
-			ChangeStat(Myself,SAVEVSSPELL,%sv_s%,SET)
-			PlaySound("NOR116")
-			ApplySpellRES("QDUNDM3",Myself)
-			Continue() 
-	END 
->>>>>>>>
-
-<<<<<<<< QD/nordom_leveling_max.baf
-	IF
-		Global("qd_nordom_party","GLOBAL",1)
-		XPGT(Protagonist,%xp%)
-		!Level(Myself,%lvl%)
-	THEN	
-		RESPONSE #100 
-			SetGlobal("qd_nordom_level","GLOBAL",%lvl%)
-			ChangeStat(Myself,LEVEL,%lvl%,SET)
-			ChangeStat(Myself,MAXHITPOINTS,%hp%,SET)
-			ChangeStat(Myself,SAVEVSDEATH,%sv_d%,SET)
-			ChangeStat(Myself,SAVEVSWANDS,%sv_w%,SET)
-			ChangeStat(Myself,SAVEVSPOLY,%sv_p%,SET)
-			ChangeStat(Myself,SAVEVSBREATH,%sv_b%,SET)
-			ChangeStat(Myself,SAVEVSSPELL,%sv_s%,SET)
-			PlaySound("NOR116")
-			ApplySpellRES("QDUNDM3",Myself)
-			Continue() 
-	END 
->>>>>>>>
-
-COPY_EXISTING ~XPLEVEL.2DA~ ~override~
-	COUNT_2DA_COLS num_cols
-	COUNT_2DA_ROWS num_cols num_rows
-	READ_2DA_ENTRIES_NOW ~r2en_xp_level~ num_cols
-	FOR (col = 1; col < num_cols; col += 1) BEGIN
-		READ_2DA_ENTRY_FORMER ~r2en_xp_level~ 2 col xp
-		PATCH_IF (col < 20) THEN BEGIN 
-			READ_2DA_ENTRY_FORMER ~r2en_xp_level~ 2 col+1 xp_next
-		END 
-		INNER_ACTION BEGIN 
-			COPY_EXISTING ~savewar.2da~ ~override~ 
-				COUNT_2DA_COLS save_cols
-				READ_2DA_ENTRY 0 col save_cols death
-				READ_2DA_ENTRY 1 col save_cols wands
-				READ_2DA_ENTRY 2 col save_cols poly
-				READ_2DA_ENTRY 3 col save_cols breath
-				READ_2DA_ENTRY 4 col save_cols spell
-			ACTION_IF (col < 20) THEN BEGIN 
-				ACTION_IF (col < 10) THEN BEGIN 
-					EXTEND_BOTTOM ~pcnordom.bcs~ ~QD/nordom_leveling.baf~ 
-						prev = (%col%)-1
-						lvl = (%col%)
-						xp = (%xp%)
-						xp_next = (%xp_next%)
-						hp = (12*%col%)
-						sv_d = %death%
-						sv_w = %wands%
-						sv_p = %poly%
-						sv_b = %breath%
-						sv_s = %spell%
-					EVAL 
-				END 
-				ELSE BEGIN 
-					EXTEND_BOTTOM ~pcnordom.bcs~ ~QD/nordom_leveling.baf~ 
-						lvl = (%col%)
-						xp = (%xp%)
-						xp_next = (%xp_next%)
-						hp = (108 + 3*(%col%-9))
-						sv_d = %death%
-						sv_w = %wands%
-						sv_p = %poly%
-						sv_b = %breath%
-						sv_s = %spell%
-					EVAL 
-				END 
-			END 
-			ELSE BEGIN 
-				EXTEND_BOTTOM ~pcnordom.bcs~ ~QD/nordom_leveling_max.baf~ 
-					prev = (%col%)-1
-					lvl = (%col%)
-					xp = (%xp%)
-					hp = (108 + 3*(%col%-9))
-					sv_d = %death%
-					sv_w = %wands%
-					sv_p = %poly%
-					sv_b = %breath%
-					sv_s = %spell%
-				EVAL 
-			END 
-		END 
-	END 
-	
-//Updates Fell's tattoos with new party checks. 
-COPY_EXISTING ~fell.sto~ ~override~
-	GET_OFFSET_ARRAY tattoos 0x34 4 0x38 4 0 0 0x58 
-	PHP_EACH tattoos AS int => tt_off BEGIN 
-		READ_ASCII tt_off itmres
-		PATCH_IF (~%itmres%~ STRING_EQUAL_CASE ~ttcubed~) BEGIN 
-			WRITE_LONG (tt_off + 0x1c) RESOLVE_STR_REF(@11)
-		END 
-	END 
-
-//Tomb of the Nameless One removal and Drowned Nations rejoin
-<<<<<<<< QD/1800_tomb_nordom.baf
+//Fortress of Regrets removal
+<<<<<<<< QD/1200_fortress_vhailor.baf
 IF
-	Global("qd_nordom_party","GLOBAL",1)
+	Global("qd_vhailor_party","GLOBAL",1)
 THEN
 	RESPONSE #100
-		SetGlobal("qd_nordom_party","GLOBAL",0)
-		SetGlobal("qd_nordom_tomb","GLOBAL",1)
-		ActionOverride("Nordom",RemoveFamiliar())
-		ChangeEnemyAlly("Nordom",NEUTRAL)  // Morte - Talking Skull
+		SetGlobal("qd_vhailor_party","GLOBAL",0)
+		SetGlobal("qd_vhailor_fortress","GLOBAL",1)
+		ActionOverride("Vhail",RemoveFamiliar())
+		ChangeEnemyAlly("Vhail",NEUTRAL)  
 		Continue()
 END
 
 IF
-	Global("qd_nordom_tomb","GLOBAL",1)
+	Global("qd_vhailor_fortress","GLOBAL",1)
 THEN
 	RESPONSE #100 
-		SetGlobal("qd_nordom_tomb","GLOBAL",0)
-		ActionOverride("Nordom",MoveGlobal("AR1700",Myself,[4020.2600]))
+		SetGlobal("qd_vhailor_fortress","GLOBAL",0)
+		ActionOverride("Vhail",MoveGlobal("AR0202",Myself,[4000.2600]))
 		Continue()
 END 
 >>>>>>>> 
 
-EXTEND_BOTTOM ~ar1800.bcs~ ~QD/1800_tomb_nordom.baf~ 
-
-COPY_EXISTING ~ar1700.bcs~ ~override~
-	DECOMPILE_AND_PATCH BEGIN 
-		REFACTOR_TRIGGER CASE_INSENSITIVE EXACT_MATCH ~GlobalGT("Nordom","GLOBAL",0)~ ~GlobalGT("Nordom","GLOBAL",0) Global("qd_nordom_party","GLOBAL",0)~ 
-	END 
-BUT_ONLY 
+EXTEND_TOP ~ar1200.bcs~ ~QD/1200_fortress_vhailor.baf~ 
 
