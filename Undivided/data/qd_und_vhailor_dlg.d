@@ -1,7 +1,7 @@
 //-----------------------------------
-// MORTE
-// - Changes the initial Mortuary joining and rejoin dialog. 
-// - Updates Morte's interjections. 
+// VHAILOR
+// - Changes the initial joining and rejoin dialog. 
+// - Updates Vhailor's interjections. 
 //-----------------------------------
 
 //main join dialog
