@@ -170,7 +170,7 @@ COPY_EXISTING ~XPLEVEL.2DA~ ~override~
 	COUNT_2DA_COLS num_cols
 	COUNT_2DA_ROWS num_cols num_rows
 	READ_2DA_ENTRIES_NOW ~r2en_xp_level~ num_cols
-	FOR (col = 1; col < num_cols; col += 1) BEGIN
+	FOR (col = 1; col < 21; col += 1) BEGIN
 		READ_2DA_ENTRY_FORMER ~r2en_xp_level~ 2 col xp
 		PATCH_IF (col < 20) THEN BEGIN 
 			READ_2DA_ENTRY_FORMER ~r2en_xp_level~ 2 col+1 xp_next
@@ -471,7 +471,7 @@ COPY_EXISTING ~XPLEVEL.2DA~ ~override~
 	COUNT_2DA_COLS num_cols
 	COUNT_2DA_ROWS num_cols num_rows
 	READ_2DA_ENTRIES_NOW ~r2en_xp_level~ num_cols
-	FOR (col = 1; col < num_cols; col += 1) BEGIN
+	FOR (col = 1; col < 21; col += 1) BEGIN
 		READ_2DA_ENTRY_FORMER ~r2en_xp_level~ 1 col xp
 		PATCH_IF (col < 20) THEN BEGIN 
 			READ_2DA_ENTRY_FORMER ~r2en_xp_level~ 1 col+1 xp_next
