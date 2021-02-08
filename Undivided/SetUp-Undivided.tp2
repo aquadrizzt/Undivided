@@ -1,6 +1,6 @@
 BACKUP ~Undivided/backup~
 AUTHOR ~aquadrizzt@gmail.com~
-VERSION ~0.1~ 
+VERSION ~0.1~
 
 /* Language Settings */
 AUTO_TRA ~Undivided/tra/%s~
@@ -10,66 +10,66 @@ LANGUAGE ~English~ ~english~ ~Undivided/tra/english/setup.tra~
 // VHAILOR
 // -----------------------------
 // Contents:
-// - Make Vhailor follow the party but not use the party interface. 
-// - Vhailor automatically levels up with TNO. 
+// - Make Vhailor follow the party but not use the party interface.
+// - Vhailor automatically levels up with TNO.
 // - Vhailor interjects when possible.
 // -----------------------------
-// Future Updates: 
+// Future Updates:
 // - Allowing Vhailor to comment on party member deaths.
-// - Allowing Vhailor to banter with party members. 
+// - Allowing Vhailor to banter with party members.
 // ========================================================
 
-BEGIN @100 
+BEGIN @100
 
-COPY_EXISTING ~aclue.itm~ ~override/qd_und_vhailor.qd~ //check file for this component 
+COPY_EXISTING ~aclue.itm~ ~override/qd_und_vhailor.qd~ //check file for this component
 
-COPY ~Undivided/data/qd_und1.itm~ ~override~ //min HP = 1; fog of war on 
+COPY ~Undivided/data/qd_und1.itm~ ~override~ //min HP = 1; fog of war on
 	 // ~Undivided/data/qd_und2.itm~ ~override~ //fog of war on (only equip while in party)
      ~Undivided/data/qdundm1.spl~ ~override/qdundv1.spl~ //vhailor: prot from enemies and disable
 	 ~Undivided/data/qdundm2.spl~ ~override/qdundv2.spl~ //vhailor: +1 hp and remove v1
 	 ~Undivided/data/qdundm3.spl~ ~override/qdundv3.spl~ //vhailor: levelup heal
-		
+
 //slight change to UI to enable vhailor to attack
-COPY_EXISTING ~ui.menu~ ~override~ 
+COPY_EXISTING ~ui.menu~ ~override~
 	REPLACE_TEXTUALLY ~enabled "buttonArray:GetButtonEnabled(0)"~ ~~
 BUT_ONLY
 
-//adding min HP and exploration to Vhailor 
+//adding min HP and exploration to Vhailor
 /*
-COPY_EXISTING ~vhail.cre~ ~override~ 
+COPY_EXISTING ~vhail.cre~ ~override~
 	ADD_CRE_ITEM ~qd_und1~ #0 #0 #0 ~NONE~ ~RRING~ EQUIP
 
-COPY_EXISTING ~vhaileg.cre~ ~override~ 
+COPY_EXISTING ~vhaileg.cre~ ~override~
 	ADD_CRE_ITEM ~qd_und1~ #0 #0 #0 ~NONE~ ~RRING~ EQUIP
-*/ 	
-EXTEND_BOTTOM ~pcvhail.bcs~ ~Undivided/data/qd_und_vhailor.baf~ 
-	
-//Updating script checks for Vhailor 
-COPY_EXISTING_REGEXP ~.*\.bcs~ ~override~ 
-	DECOMPILE_AND_PATCH BEGIN 
-		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH ~ActionOverride("Vhail",JoinPartyEx(TRUE))~ ~ActionOverride("Vhail",AddFamiliar()) ChangeEnemyAlly("Vhail",FAMILIAR) AddFamiliar() ApplySpellRES("QDUNDV2",Myself) GiveItemCreate("qd_und1",Myself,1,0,0) XEquipItem("qd_und1","vhail",SLOT_RING_LEFT,1) SetGlobal("Vhailor_Join","GLOBAL",1) SetGlobal("qd_vhailor_party","GLOBAL",1) ActionOverride(Protagonist,DestroyItem("qd_und1"))~ 
-		// REPLACE_TEXTUALLY CASE_INSENSITIVE EVALUATE_REGEXP ~TeleportParty("\(AR[0-9]*\)",\[\([0-9]*\)\.\([0-9]*\)\],\([0-9]*\))~ ~ TeleportParty("\1",[\2.\3],\4) GiveOrder(Protagonist,66)~ 
-		REFACTOR_TRIGGER CASE_INSENSITIVE EXACT_MATCH ~InParty("Vhail")~ ~Global("qd_vhailor_party","GLOBAL",1)~ 
-	END 
-BUT_ONLY 
+*/
+EXTEND_BOTTOM ~pcvhail.bcs~ ~Undivided/data/qd_und_vhailor.baf~
+
+//Updating script checks for Vhailor
+COPY_EXISTING_REGEXP ~.+\.bcs~ ~override~
+	DECOMPILE_AND_PATCH BEGIN
+		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH ~ActionOverride("Vhail",JoinPartyEx(TRUE))~ ~ActionOverride("Vhail",AddFamiliar()) ChangeEnemyAlly("Vhail",FAMILIAR) AddFamiliar() ApplySpellRES("QDUNDV2",Myself) GiveItemCreate("qd_und1",Myself,1,0,0) XEquipItem("qd_und1","vhail",SLOT_RING_LEFT,1) SetGlobal("Vhailor_Join","GLOBAL",1) SetGlobal("qd_vhailor_party","GLOBAL",1) ActionOverride(Protagonist,DestroyItem("qd_und1"))~
+		// REPLACE_TEXTUALLY CASE_INSENSITIVE EVALUATE_REGEXP ~TeleportParty("\(AR[0-9]*\)",\[\([0-9]*\)\.\([0-9]*\)\],\([0-9]*\))~ ~ TeleportParty("\1",[\2.\3],\4) GiveOrder(Protagonist,66)~
+		REFACTOR_TRIGGER CASE_INSENSITIVE EXACT_MATCH ~InParty("Vhail")~ ~Global("qd_vhailor_party","GLOBAL",1)~
+	END
+BUT_ONLY
 
 //Vhailor will use Party AI as appropriate
 COPY_EXISTING ~pcvhail.bcs~ ~override~
-	DECOMPILE_AND_PATCH BEGIN 
-		REFACTOR_TRIGGER CASE_INSENSITIVE EXACT_MATCH ~InParty(Myself)~ ~Global("qd_vhailor_party","GLOBAL",1)~ 
-	END 
-BUT_ONLY 
+	DECOMPILE_AND_PATCH BEGIN
+		REFACTOR_TRIGGER CASE_INSENSITIVE EXACT_MATCH ~InParty(Myself)~ ~Global("qd_vhailor_party","GLOBAL",1)~
+	END
+BUT_ONLY
 
-//Delete original Vhailor spawn from Curst Prison 
+//Delete original Vhailor spawn from Curst Prison
 COPY_EXISTING ~ar0702.are~ ~override~
 	LPF fj_are_structure
-		INT_VAR 
+		INT_VAR
 			fj_delete_mode 	  = 7
 		STR_VAR
 			fj_structure_type = actor
 	END
-	
-//add Vhailor to somewhere hidden in starting area 
+
+//add Vhailor to somewhere hidden in starting area
 COPY_EXISTING ~ar0202.are~ ~override~
 	LPF fj_are_structure
 		INT_VAR
@@ -79,7 +79,7 @@ COPY_EXISTING ~ar0202.are~ ~override~
 			fj_structure_type = actor
 			fj_cre_resref     = vhail
 	END
-	
+
 //makes vhailor a global creature and then teleports him to his actual spawn location
 <<<<<<<< QD/vhailor_move.baf
 IF
@@ -91,18 +91,18 @@ THEN
 		Continue()
 END
 
-IF 
-	!Global("qd_vhailor_moved","GLOBAL",1) 
-	Global("qd_vhailor_global","GLOBAL",1) 
-THEN 
-	RESPONSE #100 
-		SetGlobal("qd_vhailor_moved","GLOBAL",1) 
+IF
+	!Global("qd_vhailor_moved","GLOBAL",1)
+	Global("qd_vhailor_global","GLOBAL",1)
+THEN
+	RESPONSE #100
+		SetGlobal("qd_vhailor_moved","GLOBAL",1)
 		MoveGlobal("AR0702","Vhail",[4647.454])
 		Continue()
-END 
+END
 
 // this script should shift Vhailor to the location of the protagonist outside of player-exclusive zones
-IF 
+IF
 	!AreaCheckObject("AR1200",Protagonist)
 	!AreaCheckObject("AR1201",Protagonist)
 	!AreaCheckObject("AR1202",Protagonist)
@@ -110,27 +110,27 @@ IF
 	!AreaCheckObject("AR1800",Protagonist)
 	!AreaCheckObject("AR1900",Protagonist)
 	!InActiveArea("Vhail")
-	Global("qd_vhailor_party","GLOBAL",1) 
+	Global("qd_vhailor_party","GLOBAL",1)
 	Global("qd_vhailor_global","GLOBAL",1)
 	Global("qd_vhailor_maze","GLOBAL",0)
-THEN 
-	RESPONSE #100 
+THEN
+	RESPONSE #100
 		MoveGlobalObject("Vhail",Protagonist)
 		Continue()
-END 
->>>>>>>> 
+END
+>>>>>>>>
 
-EXTEND_BOTTOM ~baldur.bcs~ ~QD/vhailor_move.baf~ 
+EXTEND_BOTTOM ~baldur.bcs~ ~QD/vhailor_move.baf~
 
-//generating xp progression script for morte 	
+//generating xp progression script for morte
 <<<<<<<< QD/vhailor_leveling.baf
 	IF
 		Global("qd_vhailor_party","GLOBAL",1)
 		XPGT(Protagonist,%xp%)
 		XPLT(Protagonist,%xp_next%)
 		LevelLT(Myself,%lvl%)
-	THEN	
-		RESPONSE #100 
+	THEN
+		RESPONSE #100
 			SetGlobal("qd_vhailor_level","GLOBAL",%lvl%)
 			ChangeStat(Myself,LEVEL,%lvl%,SET)
 			ChangeStat(Myself,MAXHITPOINTS,%hp%,SET)
@@ -141,8 +141,8 @@ EXTEND_BOTTOM ~baldur.bcs~ ~QD/vhailor_move.baf~
 			ChangeStat(Myself,SAVEVSSPELL,%sv_s%,SET)
 			PlaySound("VHA111")
 			ApplySpellRES("QDUNDV3",Myself)
-			Continue() 
-	END 
+			Continue()
+	END
 >>>>>>>>
 
 <<<<<<<< QD/vhailor_leveling_max.baf
@@ -150,8 +150,8 @@ EXTEND_BOTTOM ~baldur.bcs~ ~QD/vhailor_move.baf~
 		Global("qd_vhailor_party","GLOBAL",1)
 		XPGT(Protagonist,%xp%)
 		LevelLT(Myself,%lvl%)
-	THEN	
-		RESPONSE #100 
+	THEN
+		RESPONSE #100
 			SetGlobal("qd_vhailor_level","GLOBAL",%lvl%)
 			ChangeStat(Myself,LEVEL,%lvl%,SET)
 			ChangeStat(Myself,MAXHITPOINTS,%hp%,SET)
@@ -162,8 +162,8 @@ EXTEND_BOTTOM ~baldur.bcs~ ~QD/vhailor_move.baf~
 			ChangeStat(Myself,SAVEVSSPELL,%sv_s%,SET)
 			PlaySound("VHA111")
 			ApplySpellRES("QDUNDV3",Myself)
-			Continue() 
-	END 
+			Continue()
+	END
 >>>>>>>>
 
 COPY_EXISTING ~XPLEVEL.2DA~ ~override~
@@ -172,20 +172,20 @@ COPY_EXISTING ~XPLEVEL.2DA~ ~override~
 	READ_2DA_ENTRIES_NOW ~r2en_xp_level~ num_cols
 	FOR (col = 1; col < 21; col += 1) BEGIN
 		READ_2DA_ENTRY_FORMER ~r2en_xp_level~ 2 col xp
-		PATCH_IF (col < 20) THEN BEGIN 
+		PATCH_IF (col < 20) THEN BEGIN
 			READ_2DA_ENTRY_FORMER ~r2en_xp_level~ 2 col+1 xp_next
-		END 
-		INNER_ACTION BEGIN 
-			COPY_EXISTING ~savewar.2da~ ~override~ 
+		END
+		INNER_ACTION BEGIN
+			COPY_EXISTING ~savewar.2da~ ~override~
 				COUNT_2DA_COLS save_cols
 				READ_2DA_ENTRY 0 col save_cols death
 				READ_2DA_ENTRY 1 col save_cols wands
 				READ_2DA_ENTRY 2 col save_cols poly
 				READ_2DA_ENTRY 3 col save_cols breath
 				READ_2DA_ENTRY 4 col save_cols spell
-			ACTION_IF (col < 20) THEN BEGIN 
-				ACTION_IF (col < 10) THEN BEGIN 
-					EXTEND_BOTTOM ~pcvhail.bcs~ ~QD/vhailor_leveling.baf~ 
+			ACTION_IF (col < 20) THEN BEGIN
+				ACTION_IF (col < 10) THEN BEGIN
+					EXTEND_BOTTOM ~pcvhail.bcs~ ~QD/vhailor_leveling.baf~
 						prev = (%col%)-1
 						lvl = (%col%)
 						xp = (%xp%)
@@ -196,10 +196,10 @@ COPY_EXISTING ~XPLEVEL.2DA~ ~override~
 						sv_p = %poly%
 						sv_b = %breath%
 						sv_s = %spell%
-					EVAL 
-				END 
-				ELSE BEGIN 
-					EXTEND_BOTTOM ~pcvhail.bcs~ ~QD/vhailor_leveling.baf~ 
+					EVAL
+				END
+				ELSE BEGIN
+					EXTEND_BOTTOM ~pcvhail.bcs~ ~QD/vhailor_leveling.baf~
 						lvl = (%col%)
 						xp = (%xp%)
 						xp_next = (%xp_next%)
@@ -209,11 +209,11 @@ COPY_EXISTING ~XPLEVEL.2DA~ ~override~
 						sv_p = %poly%
 						sv_b = %breath%
 						sv_s = %spell%
-					EVAL 
-				END 
-			END 
-			ELSE BEGIN 
-				EXTEND_BOTTOM ~pcvhail.bcs~ ~QD/vhailor_leveling_max.baf~ 
+					EVAL
+				END
+			END
+			ELSE BEGIN
+				EXTEND_BOTTOM ~pcvhail.bcs~ ~QD/vhailor_leveling_max.baf~
 					prev = (%col%)-1
 					lvl = (%col%)
 					xp = (%xp%)
@@ -223,10 +223,10 @@ COPY_EXISTING ~XPLEVEL.2DA~ ~override~
 					sv_p = %poly%
 					sv_b = %breath%
 					sv_s = %spell%
-				EVAL 
-			END 
-		END 
-	END 
+				EVAL
+			END
+		END
+	END
 
 // Minor dialog patches to Vhailor
 COMPILE ~Undivided/data/qd_und_vhailor_dlg.d~
@@ -240,29 +240,29 @@ THEN
 		SetGlobal("qd_vhailor_party","GLOBAL",0)
 		SetGlobal("qd_vhailor_tomb","GLOBAL",1)
 		ActionOverride("Vhail",RemoveFamiliar())
-		ChangeEnemyAlly("Vhail",NEUTRAL)  
+		ChangeEnemyAlly("Vhail",NEUTRAL)
 		Continue()
 END
 
 IF
 	Global("qd_vhailor_tomb","GLOBAL",1)
 THEN
-	RESPONSE #100 
+	RESPONSE #100
 		SetGlobal("qd_vhailor_tomb","GLOBAL",0)
 		ActionOverride("Vhail",MoveGlobal("AR1700",Myself,[4000.2600]))
 		Continue()
-END 
->>>>>>>> 
+END
+>>>>>>>>
 
-EXTEND_BOTTOM ~ar1800.bcs~ ~QD/1800_tomb_vhailor.baf~ 
+EXTEND_BOTTOM ~ar1800.bcs~ ~QD/1800_tomb_vhailor.baf~
 
 COPY_EXISTING ~ar1700.bcs~ ~override~
-	DECOMPILE_AND_PATCH BEGIN 
-		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH ~ActionOverride("Vhail",JoinPartyEx(TRUE))~ ~SetGlobal("qd_vhailor_party","GLOBAL",1) ActionOverride("Vhail",AddFamiliar()) 		ChangeEnemyAlly("Vhail",FAMILIAR)~ 
-	END 
-BUT_ONLY 
+	DECOMPILE_AND_PATCH BEGIN
+		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH ~ActionOverride("Vhail",JoinPartyEx(TRUE))~ ~SetGlobal("qd_vhailor_party","GLOBAL",1) ActionOverride("Vhail",AddFamiliar()) 		ChangeEnemyAlly("Vhail",FAMILIAR)~
+	END
+BUT_ONLY
 
-//Player's Maze and teleport rejoin 
+//Player's Maze and teleport rejoin
 <<<<<<<< QD/1900_maze_vhailor.baf
 IF
 	Global("qd_vhailor_party","GLOBAL",1)
@@ -271,21 +271,21 @@ THEN
 		SetGlobal("qd_vhailor_party","GLOBAL",0)
 		SetGlobal("qd_vhailor_maze","GLOBAL",1)
 		ActionOverride("Vhail",RemoveFamiliar())
-		ChangeEnemyAlly("Vhail",NEUTRAL)  
+		ChangeEnemyAlly("Vhail",NEUTRAL)
 		Continue()
 END
 
 IF
 	Global("qd_vhailor_maze","GLOBAL",1)
 THEN
-	RESPONSE #100 
+	RESPONSE #100
 		SetGlobal("qd_vhailor_maze","GLOBAL",0)
 		ActionOverride("Vhail",MoveGlobal("AR1700",Myself,[4000.2600]))
 		Continue()
-END 
->>>>>>>> 
+END
+>>>>>>>>
 
-EXTEND_TOP ~1900name.bcs~ ~QD/1900_maze_vhailor.baf~ 
+EXTEND_TOP ~1900name.bcs~ ~QD/1900_maze_vhailor.baf~
 
 //Fortress of Regrets removal
 <<<<<<<< QD/1200_fortress_vhailor.baf
@@ -296,77 +296,77 @@ THEN
 		SetGlobal("qd_vhailor_party","GLOBAL",0)
 		SetGlobal("qd_vhailor_fortress","GLOBAL",1)
 		ActionOverride("Vhail",RemoveFamiliar())
-		ChangeEnemyAlly("Vhail",NEUTRAL)  
+		ChangeEnemyAlly("Vhail",NEUTRAL)
 		Continue()
 END
 
 IF
 	Global("qd_vhailor_fortress","GLOBAL",1)
 THEN
-	RESPONSE #100 
+	RESPONSE #100
 		SetGlobal("qd_vhailor_fortress","GLOBAL",0)
 		ActionOverride("Vhail",MoveGlobal("AR0202",Myself,[4000.2600]))
 		Continue()
-END 
->>>>>>>> 
+END
+>>>>>>>>
 
-EXTEND_TOP ~ar1200.bcs~ ~QD/1200_fortress_vhailor.baf~ 
+EXTEND_TOP ~ar1200.bcs~ ~QD/1200_fortress_vhailor.baf~
 
 // ========================================================
 // IGNUS
 // -----------------------------
 // Contents:
-// - Make Ignus follow the party but not use the party interface. 
-// - Ignus automatically levels up with TNO. 
+// - Make Ignus follow the party but not use the party interface.
+// - Ignus automatically levels up with TNO.
 // - Ignus interjects when possible.
 // -----------------------------
-// Future Updates: 
+// Future Updates:
 // - Allowing Ignus to comment on party member deaths.
-// - Allowing Ignus to banter with party members. 
+// - Allowing Ignus to banter with party members.
 // ========================================================
 
-BEGIN @200 
+BEGIN @200
 
-COPY_EXISTING ~aclue.itm~ ~override/qd_und_ignus.qd~ //check file for this component 
+COPY_EXISTING ~aclue.itm~ ~override/qd_und_ignus.qd~ //check file for this component
 
-COPY ~Undivided/data/qd_und1.itm~ ~override~ //min HP = 1; fog of war on 
+COPY ~Undivided/data/qd_und1.itm~ ~override~ //min HP = 1; fog of war on
 	 // ~Undivided/data/qd_und2.itm~ ~override~ //fog of war on (only equip while in party)
      ~Undivided/data/qdundm1.spl~ ~override/qdundi1.spl~ //vhailor: prot from enemies and disable
 	 ~Undivided/data/qdundm2.spl~ ~override/qdundi2.spl~ //vhailor: +1 hp and remove v1
 	 ~Undivided/data/qdundm3.spl~ ~override/qdundi3.spl~ //vhailor: levelup heal
-		
+
 //slight change to UI to enable vhailor to attack
-COPY_EXISTING ~ui.menu~ ~override~ 
+COPY_EXISTING ~ui.menu~ ~override~
 	REPLACE_TEXTUALLY ~enabled "buttonArray:GetButtonEnabled(0)"~ ~~
-BUT_ONLY 
+BUT_ONLY
 
-EXTEND_BOTTOM ~pcignus.bcs~ ~Undivided/data/qd_und_ignus.baf~ 
+EXTEND_BOTTOM ~pcignus.bcs~ ~Undivided/data/qd_und_ignus.baf~
 
-COPY_EXISTING_REGEXP ~.*\.bcs~ ~override~ 
-	DECOMPILE_AND_PATCH BEGIN 
-		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH ~ActionOverride("Ignus",JoinPartyEx(TRUE))~ ~ActionOverride("Ignus",AddFamiliar()) ChangeEnemyAlly("Ignus",FAMILIAR) AddFamiliar() ApplySpellRES("QDUNDV2",Myself) GiveItemCreate("qd_und1",Myself,1,0,0) XEquipItem("qd_und1","Ignus",SLOT_RING_LEFT,1) SetGlobal("Vhailor_Join","GLOBAL",1) SetGlobal("qd_ignus_party","GLOBAL",1) ActionOverride(Protagonist,DestroyItem("qd_und1"))~ 
-		REFACTOR_TRIGGER CASE_INSENSITIVE EXACT_MATCH ~InParty("Ignus")~ ~Global("qd_ignus_party","GLOBAL",1)~ 
-	END 
-BUT_ONLY 
+COPY_EXISTING_REGEXP ~.+\.bcs~ ~override~
+	DECOMPILE_AND_PATCH BEGIN
+		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH ~ActionOverride("Ignus",JoinPartyEx(TRUE))~ ~ActionOverride("Ignus",AddFamiliar()) ChangeEnemyAlly("Ignus",FAMILIAR) AddFamiliar() ApplySpellRES("QDUNDV2",Myself) GiveItemCreate("qd_und1",Myself,1,0,0) XEquipItem("qd_und1","Ignus",SLOT_RING_LEFT,1) SetGlobal("Vhailor_Join","GLOBAL",1) SetGlobal("qd_ignus_party","GLOBAL",1) ActionOverride(Protagonist,DestroyItem("qd_und1"))~
+		REFACTOR_TRIGGER CASE_INSENSITIVE EXACT_MATCH ~InParty("Ignus")~ ~Global("qd_ignus_party","GLOBAL",1)~
+	END
+BUT_ONLY
 
 //Ignus will use Party AI as appropriate
 COPY_EXISTING ~pcignus.bcs~ ~override~
-	DECOMPILE_AND_PATCH BEGIN 
-		REFACTOR_TRIGGER CASE_INSENSITIVE EXACT_MATCH ~InParty(Myself)~ ~Global("qd_ignus_party","GLOBAL",1)~ 
-	END 
-BUT_ONLY 
+	DECOMPILE_AND_PATCH BEGIN
+		REFACTOR_TRIGGER CASE_INSENSITIVE EXACT_MATCH ~InParty(Myself)~ ~Global("qd_ignus_party","GLOBAL",1)~
+	END
+BUT_ONLY
 
 
 //Delete original Ignus spawn from Smoldering Corpse Bar
 COPY_EXISTING ~ar0402.are~ ~override~
 	LPF fj_are_structure
-		INT_VAR 
+		INT_VAR
 			fj_delete_mode 	  = 6
 		STR_VAR
 			fj_structure_type = actor
 	END
-	
-//add Ignus to somewhere hidden in starting area 
+
+//add Ignus to somewhere hidden in starting area
 COPY_EXISTING ~ar0202.are~ ~override~
 	LPF fj_are_structure
 		INT_VAR
@@ -376,7 +376,7 @@ COPY_EXISTING ~ar0202.are~ ~override~
 			fj_structure_type = actor
 			fj_cre_resref     = ignus
 	END
-	
+
 //makes vhailor a global creature and then teleports him to his actual spawn location
 <<<<<<<< QD/ignus_move.baf
 IF
@@ -388,18 +388,18 @@ THEN
 		Continue()
 END
 
-IF 
-	!Global("qd_ignus_moved","GLOBAL",1) 
-	Global("qd_ignus_global","GLOBAL",1) 
-THEN 
-	RESPONSE #100 
-		SetGlobal("qd_ignus_moved","GLOBAL",1) 
+IF
+	!Global("qd_ignus_moved","GLOBAL",1)
+	Global("qd_ignus_global","GLOBAL",1)
+THEN
+	RESPONSE #100
+		SetGlobal("qd_ignus_moved","GLOBAL",1)
 		MoveGlobal("AR0402","Ignus",[1243.1108])
 		Continue()
-END 
+END
 
 // this script should shift Ignus to the location of the protagonist outside of player-exclusive zones
-IF 
+IF
 	!AreaCheckObject("AR1200",Protagonist)
 	!AreaCheckObject("AR1201",Protagonist)
 	!AreaCheckObject("AR1202",Protagonist)
@@ -407,31 +407,31 @@ IF
 	!AreaCheckObject("AR1800",Protagonist)
 	!AreaCheckObject("AR1900",Protagonist)
 	!InActiveArea("Ignus")
-	Global("qd_ignus_party","GLOBAL",1) 
+	Global("qd_ignus_party","GLOBAL",1)
 	Global("qd_ignus_global","GLOBAL",1)
 	Global("qd_ignus_maze","GLOBAL",0)
-THEN 
-	RESPONSE #100 
+THEN
+	RESPONSE #100
 		MoveGlobalObject("Ignus",Protagonist)
 		Continue()
-END 
->>>>>>>> 
+END
+>>>>>>>>
 
-EXTEND_BOTTOM ~baldur.bcs~ ~QD/ignus_move.baf~ 
-
-
+EXTEND_BOTTOM ~baldur.bcs~ ~QD/ignus_move.baf~
 
 
 
-//generating xp progression script for morte 	
+
+
+//generating xp progression script for morte
 <<<<<<<< QD/ignus_leveling.baf
 	IF
 		Global("qd_ignus_party","GLOBAL",1)
 		XPGT(Protagonist,%xp%)
 		XPLT(Protagonist,%xp_next%)
 		LevelLT(Myself,%lvl%)
-	THEN	
-		RESPONSE #100 
+	THEN
+		RESPONSE #100
 			SetGlobal("qd_ignus_level","GLOBAL",%lvl%)
 			ChangeStat(Myself,LEVEL,%lvl%,SET)
 			ChangeStat(Myself,MAXHITPOINTS,%hp%,SET)
@@ -442,8 +442,8 @@ EXTEND_BOTTOM ~baldur.bcs~ ~QD/ignus_move.baf~
 			ChangeStat(Myself,SAVEVSSPELL,%sv_s%,SET)
 			PlaySound("IGN118")
 			ApplySpellRES("QDUNDV3",Myself)
-			Continue() 
-	END 
+			Continue()
+	END
 >>>>>>>>
 
 <<<<<<<< QD/ignus_leveling_max.baf
@@ -451,8 +451,8 @@ EXTEND_BOTTOM ~baldur.bcs~ ~QD/ignus_move.baf~
 		Global("qd_ignus_party","GLOBAL",1)
 		XPGT(Protagonist,%xp%)
 		LevelLT(Myself,%lvl%)
-	THEN	
-		RESPONSE #100 
+	THEN
+		RESPONSE #100
 			SetGlobal("qd_ignus_level","GLOBAL",%lvl%)
 			ChangeStat(Myself,LEVEL,%lvl%,SET)
 			ChangeStat(Myself,MAXHITPOINTS,%hp%,SET)
@@ -463,8 +463,8 @@ EXTEND_BOTTOM ~baldur.bcs~ ~QD/ignus_move.baf~
 			ChangeStat(Myself,SAVEVSSPELL,%sv_s%,SET)
 			PlaySound("IGN118")
 			ApplySpellRES("QDUNDV3",Myself)
-			Continue() 
-	END 
+			Continue()
+	END
 >>>>>>>>
 
 COPY_EXISTING ~XPLEVEL.2DA~ ~override~
@@ -473,20 +473,20 @@ COPY_EXISTING ~XPLEVEL.2DA~ ~override~
 	READ_2DA_ENTRIES_NOW ~r2en_xp_level~ num_cols
 	FOR (col = 1; col < 21; col += 1) BEGIN
 		READ_2DA_ENTRY_FORMER ~r2en_xp_level~ 1 col xp
-		PATCH_IF (col < 20) THEN BEGIN 
+		PATCH_IF (col < 20) THEN BEGIN
 			READ_2DA_ENTRY_FORMER ~r2en_xp_level~ 1 col+1 xp_next
-		END 
-		INNER_ACTION BEGIN 
-			COPY_EXISTING ~savewiz.2da~ ~override~ 
+		END
+		INNER_ACTION BEGIN
+			COPY_EXISTING ~savewiz.2da~ ~override~
 				COUNT_2DA_COLS save_cols
 				READ_2DA_ENTRY 0 col save_cols death
 				READ_2DA_ENTRY 1 col save_cols wands
 				READ_2DA_ENTRY 2 col save_cols poly
 				READ_2DA_ENTRY 3 col save_cols breath
 				READ_2DA_ENTRY 4 col save_cols spell
-			ACTION_IF (col < 20) THEN BEGIN 
-				ACTION_IF (col < 11) THEN BEGIN 
-					EXTEND_BOTTOM ~pcignus.bcs~ ~QD/ignus_leveling.baf~ 
+			ACTION_IF (col < 20) THEN BEGIN
+				ACTION_IF (col < 11) THEN BEGIN
+					EXTEND_BOTTOM ~pcignus.bcs~ ~QD/ignus_leveling.baf~
 						prev = (%col%)-1
 						lvl = (%col%)
 						xp = (%xp%)
@@ -497,10 +497,10 @@ COPY_EXISTING ~XPLEVEL.2DA~ ~override~
 						sv_p = %poly%
 						sv_b = %breath%
 						sv_s = %spell%
-					EVAL 
-				END 
-				ELSE BEGIN 
-					EXTEND_BOTTOM ~pcignus.bcs~ ~QD/ignus_leveling.baf~ 
+					EVAL
+				END
+				ELSE BEGIN
+					EXTEND_BOTTOM ~pcignus.bcs~ ~QD/ignus_leveling.baf~
 						lvl = (%col%)
 						xp = (%xp%)
 						xp_next = (%xp_next%)
@@ -510,11 +510,11 @@ COPY_EXISTING ~XPLEVEL.2DA~ ~override~
 						sv_p = %poly%
 						sv_b = %breath%
 						sv_s = %spell%
-					EVAL 
-				END 
-			END 
-			ELSE BEGIN 
-				EXTEND_BOTTOM ~pcignus.bcs~ ~QD/ignus_leveling_max.baf~ 
+					EVAL
+				END
+			END
+			ELSE BEGIN
+				EXTEND_BOTTOM ~pcignus.bcs~ ~QD/ignus_leveling_max.baf~
 					prev = (%col%)-1
 					lvl = (%col%)
 					xp = (%xp%)
@@ -524,11 +524,11 @@ COPY_EXISTING ~XPLEVEL.2DA~ ~override~
 					sv_p = %poly%
 					sv_b = %breath%
 					sv_s = %spell%
-				EVAL 
-			END 
-		END 
-	END 
-	
+				EVAL
+			END
+		END
+	END
+
 // Minor dialog patches to Ignus
 COMPILE ~Undivided/data/qd_und_ignus_dlg.d~
 
@@ -541,29 +541,29 @@ THEN
 		SetGlobal("qd_ignus_party","GLOBAL",0)
 		SetGlobal("qd_ignus_tomb","GLOBAL",1)
 		ActionOverride("Ignus",RemoveFamiliar())
-		ChangeEnemyAlly("Ignus",NEUTRAL)  
+		ChangeEnemyAlly("Ignus",NEUTRAL)
 		Continue()
 END
 
 IF
 	Global("qd_ignus_tomb","GLOBAL",1)
 THEN
-	RESPONSE #100 
+	RESPONSE #100
 		SetGlobal("qd_ignus_tomb","GLOBAL",0)
 		ActionOverride("Ignus",MoveGlobal("AR1700",Myself,[4000.2600]))
 		Continue()
-END 
->>>>>>>> 
+END
+>>>>>>>>
 
-EXTEND_BOTTOM ~ar1800.bcs~ ~QD/1800_tomb_ignus.baf~ 
+EXTEND_BOTTOM ~ar1800.bcs~ ~QD/1800_tomb_ignus.baf~
 
 COPY_EXISTING ~ar1700.bcs~ ~override~
-	DECOMPILE_AND_PATCH BEGIN 
-		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH ~ActionOverride("Ignus",JoinPartyEx(TRUE))~ ~SetGlobal("qd_ignus_party","GLOBAL",1) ActionOverride("Ignus",AddFamiliar()) 		ChangeEnemyAlly("Ignus",FAMILIAR)~ 
-	END 
-BUT_ONLY 
+	DECOMPILE_AND_PATCH BEGIN
+		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH ~ActionOverride("Ignus",JoinPartyEx(TRUE))~ ~SetGlobal("qd_ignus_party","GLOBAL",1) ActionOverride("Ignus",AddFamiliar()) 		ChangeEnemyAlly("Ignus",FAMILIAR)~
+	END
+BUT_ONLY
 
-//Player's Maze and teleport rejoin 
+//Player's Maze and teleport rejoin
 <<<<<<<< QD/1900_maze_ignus.baf
 IF
 	Global("qd_ignus_party","GLOBAL",1)
@@ -572,21 +572,21 @@ THEN
 		SetGlobal("qd_ignus_party","GLOBAL",0)
 		SetGlobal("qd_ignus_maze","GLOBAL",1)
 		ActionOverride("Ignus",RemoveFamiliar())
-		ChangeEnemyAlly("Ignus",NEUTRAL)  
+		ChangeEnemyAlly("Ignus",NEUTRAL)
 		Continue()
 END
 
 IF
 	Global("qd_ignus_maze","GLOBAL",1)
 THEN
-	RESPONSE #100 
+	RESPONSE #100
 		SetGlobal("qd_ignus_maze","GLOBAL",0)
 		ActionOverride("Ignus",MoveGlobal("AR1700",Myself,[4000.2600]))
 		Continue()
-END 
->>>>>>>> 
+END
+>>>>>>>>
 
-EXTEND_TOP ~1900name.bcs~ ~QD/1900_maze_ignus.baf~ 
+EXTEND_TOP ~1900name.bcs~ ~QD/1900_maze_ignus.baf~
 
 //Fortress of Regrets removal
 <<<<<<<< QD/1200_fortress_ignus.baf
@@ -597,18 +597,18 @@ THEN
 		SetGlobal("qd_ignus_party","GLOBAL",0)
 		SetGlobal("qd_ignus_fortress","GLOBAL",1)
 		ActionOverride("Ignus",RemoveFamiliar())
-		ChangeEnemyAlly("Ignus",NEUTRAL)  
+		ChangeEnemyAlly("Ignus",NEUTRAL)
 		Continue()
 END
 
 IF
 	Global("qd_ignus_fortress","GLOBAL",1)
 THEN
-	RESPONSE #100 
+	RESPONSE #100
 		SetGlobal("qd_ignus_fortress","GLOBAL",0)
 		ActionOverride("Ignus",MoveGlobal("AR0202",Myself,[4000.2600]))
 		Continue()
-END 
->>>>>>>> 
+END
+>>>>>>>>
 
-EXTEND_TOP ~ar1200.bcs~ ~QD/1200_fortress_ignus.baf~ 
+EXTEND_TOP ~ar1200.bcs~ ~QD/1200_fortress_ignus.baf~
