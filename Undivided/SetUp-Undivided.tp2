@@ -5,6 +5,7 @@ VERSION ~0.1~
 /* Language Settings */
 AUTO_TRA ~Undivided/tra/%s~
 LANGUAGE ~English~ ~english~ ~Undivided/tra/english/setup.tra~
+LANGUAGE ~ Simplified Chinese~ ~schinese~ ~Undivided/tra/schinese/setup.tra~
 
 // ========================================================
 // VHAILOR
