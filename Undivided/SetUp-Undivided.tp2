@@ -42,6 +42,11 @@ COPY ~Undivided/data/QDUND1.spl~ ~override~ // follower effects: clear fog of wa
 	 ~Undivided/data/QDUNDM1.spl~ ~override~ // play dead 
 	 ~Undivided/data/QDUNDM2.spl~ ~override~ // wake up
 
+//slight change to UI to enable companions to attack
+COPY_EXISTING ~ui.menu~ ~override~
+	REPLACE_TEXTUALLY ~enabled "buttonArray:GetButtonEnabled(0)"~ ~~
+BUT_ONLY
+
 <<<<<<<< .../inlined/Undivided/QD_JOINPARTY.d
 ALTER_TRANS %dialog_res% 
 BEGIN %state_idx% END 
