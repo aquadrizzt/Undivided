@@ -1,0 +1,34 @@
+// Teleport to TNO (except for Fortress, Tomb, and Player's Maze)
+IF 
+	!InActiveArea("%character%")
+	%teleport_conditions%
+	Global("QD_%character%_1900","GLOBAL",2)
+THEN
+	RESPONSE #100
+		MoveGlobalObject("%character%",Protagonist)
+		SetGlobal("QD_%character%_1900","GLOBAL",0) 
+		ChangeEnemyAlly("%character%",FAMILIAR) 
+		ActionOverride("%character%",AddFamiliar())
+		SmallWait(1)
+		Continue()
+END 
+/*
+IF 
+	!AreaCheckObject("AR1200",Protagonist)
+	!AreaCheckObject("AR1201",Protagonist)
+	!AreaCheckObject("AR1202",Protagonist)
+	!AreaCheckObject("AR1203",Protagonist)
+	!AreaCheckObject("AR1204",Protagonist)
+	!AreaCheckObject("AR1800",Protagonist)
+	!AreaCheckObject("AR1900",Protagonist)
+	!InActiveArea("%character%")
+	%teleport_conditions%
+	Global("QD_%character%_FOLLOWER","GLOBAL",1)
+	Global("QD_%character%_1900","GLOBAL",0)
+THEN
+	RESPONSE #100 
+		MoveGlobalObject("%character%",Protagonist)
+		Continue()
+END 
+*/
+

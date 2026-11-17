@@ -1,0 +1,19 @@
+// Make Global
+IF
+	Global("QD_%character%_GLOBAL","GLOBAL",0)
+THEN
+	RESPONSE #100
+		SetGlobal("QD_%character%_GLOBAL","GLOBAL",1)
+		ActionOverride("%character%",MakeGlobal())
+		Continue()
+END
+
+IF
+	Global("QD_%character%_MOVED","GLOBAL",0)
+	Global("QD_%character%_GLOBAL","GLOBAL",1)
+THEN
+	RESPONSE #100
+		SetGlobal("QD_%character%_MOVED","GLOBAL",1)
+		MoveGlobal("%starting_area%","%character%",[%starting_x%.%starting_y%])
+		Continue()
+END

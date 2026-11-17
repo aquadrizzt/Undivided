@@ -1,0 +1,14 @@
+// This file allows you to finetune which NPCs are configured to be available as followers. 
+
+// All NPCs (from the base game) are supported. If you would like to change which NPCs are affected by this mod, set their value to 0.
+
+OUTER_SET MORTE_FOLLOWER = 1 
+OUTER_SET DAKKON_FOLLOWER = 1 
+OUTER_SET ANNAH_FOLLOWER = 1 
+OUTER_SET IGNUS_FOLLOWER = 1 
+OUTER_SET GRACE_FOLLOWER = 1 
+OUTER_SET NORDOM_FOLLOWER = 1 
+OUTER_SET VHAILOR_FOLLOWER = 1 
+
+// Out of combat, followers will run to TNO if they are outside of this distance (in game units). 
+OUTER_SET LEASH_DISTANCE = 10

@@ -1,0 +1,12 @@
+IF
+	Global("Current_Area","GLOBAL",1800)
+	Global("QD_%character%_1800","GLOBAL",2) 
+THEN 
+	RESPONSE #100
+		SetGlobal("QD_%character%_1800","GLOBAL",0) 
+		SetGlobal("QD_%character%_FOLLOWER","GLOBAL",1)
+		ChangeEnemyAlly("%character%",FAMILIAR) 
+		ActionOverride("%character%",AddFamiliar())
+		SmallWait(1)
+		Continue()
+END 

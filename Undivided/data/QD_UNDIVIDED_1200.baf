@@ -1,0 +1,20 @@
+IF
+	Global("QD_%character%_1200","GLOBAL",0) 
+	Global("QD_%character%_FOLLOWER","GLOBAL",1) 
+THEN 
+	RESPONSE #100
+		SetGlobal("QD_%character%_FOLLOWER","GLOBAL",0) 
+		SetGlobal("QD_%character%_1200","GLOBAL",1) 
+		ActionOverride("%character%",RemoveFamiliar())
+		ChangeEnemyAlly("%character%",NEUTRAL)
+		Continue()
+END 
+
+IF
+	Global("QD_%character%_1200","GLOBAL",1) 
+THEN 
+	RESPONSE #100
+		SetGlobal("QD_%character%_1200","GLOBAL",2) 
+		MoveGlobal("AR1204","%character%",[%fortress_spawn_y%.%fortress_spawn_x%])
+		Continue()
+END 

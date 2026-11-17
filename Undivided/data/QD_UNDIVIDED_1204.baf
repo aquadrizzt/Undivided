@@ -1,0 +1,10 @@
+IF
+	Global("QD_%character%_1200","GLOBAL",2) 
+	Global("%fortress_variable%","GLOBAL",0)
+	%fortress_reflection_check%
+THEN 
+	RESPONSE #100
+		SetGlobal("%fortress_variable%","GLOBAL",2)
+		IncrementGlobal("Fortress_Party_Roof","GLOBAL",1)
+		Continue()
+END 

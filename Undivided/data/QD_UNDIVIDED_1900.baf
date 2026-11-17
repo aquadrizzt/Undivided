@@ -1,0 +1,21 @@
+IF
+	InActiveArea("%character%")
+	Global("QD_%character%_1900","GLOBAL",0) 
+	Global("QD_%character%_FOLLOWER","GLOBAL",1) 
+THEN 
+	RESPONSE #100
+		// SetGlobal("QD_%character%_FOLLOWER","GLOBAL",0) 
+		SetGlobal("QD_%character%_1900","GLOBAL",1) 
+		ActionOverride("%character%",RemoveFamiliar())
+		ChangeEnemyAlly("%character%",NEUTRAL)
+		Continue()
+END 
+
+IF
+	Global("QD_%character%_1900","GLOBAL",1) 
+THEN 
+	RESPONSE #100
+		SetGlobal("QD_%character%_1900","GLOBAL",2) 
+		MoveGlobal("AR1700","%character%",[4000.2600])
+		Continue()
+END 

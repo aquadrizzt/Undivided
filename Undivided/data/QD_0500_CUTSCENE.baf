@@ -1,0 +1,9 @@
+IF
+	Global("Morte_Stolen","GLOBAL",2)
+	Global("QD_MORTE_FOLLOWER","GLOBAL",1)
+THEN
+	RESPONSE #100
+		StartCutSceneMode()
+		StartCutScene("qd0500m")
+		Continue()
+END

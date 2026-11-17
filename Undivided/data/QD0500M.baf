@@ -1,0 +1,26 @@
+IF
+	True()
+THEN
+	RESPONSE #100
+		CutSceneId("Morte")  // Morte - Talking Skull
+		Activate(Myself)
+		JumpToPoint([2221.3042])
+		Face(E)
+		PlaySequence(ANIM_GETUP)
+		SetDialog("DMORTE")
+		ChangeEnemyAlly("%character%",FAMILIAR) 
+		ActionOverride("%character%",AddFamiliar())
+		SmallWait(1)
+END
+
+IF
+    True()
+THEN
+    RESPONSE #100
+        CutSceneId(Player1)
+        Wait(1)
+        Activate("Morte")  // Morte - Talking Skull
+        ApplySpell("Morte",SPECIAL_ADD_SKULL_MOB)  // Morte - Talking Skull
+        SetGlobal("Morte_Stolen","GLOBAL",3)
+        EndCutSceneMode()
+END

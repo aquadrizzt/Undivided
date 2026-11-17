@@ -1,0 +1,106 @@
+OUTER_SPRINT dlg_file ~DANNAH~ 
+OUTER_SPRINT character ~VHAIL~ 
+OUTER_SPRINT play_dead_sound ~VHA040~ 
+OUTER_SPRINT fortress_variable ~Fortress_Vhailor~ 
+OUTER_SET fortress_spawn_y = 1706
+OUTER_SET fortress_spawn_x = 1021
+OUTER_SPRINT teleport_conditions ~~ 
+OUTER_SPRINT fortress_reflection_check ~Global("Fortress_Vhailor_Battle","GLOBAL",0)~ 
+OUTER_SPRINT starting_area ~AR0702~ 
+
+COPY_EXISTING ~DVHAIL.DLG~ ~override~
+	LPF qd_update_joins STR_VAR character = EVAL ~%character%~ END 
+
+COMPILE ~Undivided/data/QD_VHAILOR_LEAVE.d~
+
+// global trick 
+COPY_EXISTING ~%starting_area%.are~ ~override~
+	READ_LONG  0x54 ofs_actors 
+	READ_SHORT 0x58 num_actors
+	FOR (i=0; i < num_actors; ++i) BEGIN 
+		READ_ASCII (ofs_actors + i*0x110 + 0x80) actor_resref 
+		PATCH_IF (~%actor_resref%~ STRING_EQUAL ~%character%~) BEGIN 
+			READ_SHORT (ofs_actors + i*0x110 + 0x20) starting_x 
+			READ_SHORT (ofs_actors + i*0x110 + 0x22) starting_y 
+			INNER_ACTION BEGIN 
+				EXTEND_TOP ~ar0202.bcs~ ~Undivided/data/QD_MOVE_GLOBAL.baf~ EVAL 
+			END 
+			LPF fj_are_structure
+				INT_VAR
+					fj_delete_mode 	  = i
+				STR_VAR
+					fj_structure_type = actor
+			END
+			SET i = num_actors
+		END 
+	END 
+	
+COPY_EXISTING ~ar0202.are~ ~override~
+	LPF fj_are_structure
+		INT_VAR
+			fj_loc_x          = 2180
+			fj_loc_y          = 2550
+		STR_VAR
+			fj_name = EVALUATE_BUFFER ~%character%~  
+			fj_structure_type = actor
+			fj_cre_resref     =  EVALUATE_BUFFER ~%character%~  
+	END
+
+COPY_EXISTING_REGEXP ~.+\.bcs$~ ~override~
+	DECOMPILE_AND_PATCH BEGIN
+		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH 
+		~!InParty("%character%")~ 
+		~!InParty("%character%_KRANGLED")~  
+
+		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH 
+		~InParty("%character%")~ 
+		~OR(2) InParty("%character%") Global("QD_%character%_FOLLOWER","GLOBAL",1)~
+
+		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH ~!InParty("%character%_KRANGLED")~ 
+		~!InParty("%character%") Global("QD_%character%_FOLLOWER","GLOBAL",0)~
+	END
+BUT_ONLY
+
+ACTION_PHP_EACH areas_1900 AS script => _ BEGIN 
+	EXTEND_TOP ~%script%.bcs~ ~Undivided/data/QD_TELEPORT_TO_TNO.baf~ EVAL
+END 
+
+COPY_EXISTING_REGEXP ~.+\.dlg~ ~override~
+	DECOMPILE_AND_PATCH BEGIN
+		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH 
+		~!InParty("%character%")~ 
+		~!InParty("%character%_KRANGLED")~  
+
+		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH 
+		~InParty("%character%")~ 
+		~OR(2) InParty("%character%") Global("QD_%character%_FOLLOWER","GLOBAL",1)~
+
+		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH ~!InParty("%character%_KRANGLED")~ 
+		~!InParty("%character%") Global("QD_%character%_FOLLOWER","GLOBAL",0)~
+
+		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH 
+		~!NearbyDialog("%dlg_file%")~ 
+		~StateCheck("%character%", CD_STATE_NOTVALID)~ 
+
+		REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH 
+		~NearbyDialog("%dlg_file%")~ 
+		~!StateCheck("%character%", CD_STATE_NOTVALID)~ 
+	END
+BUT_ONLY
+
+
+
+// Tomb of the Nameless and Drowned Nations rejoin
+EXTEND_TOP ~ar1800.bcs~ ~Undivided/data/QD_UNDIVIDED_1800.baf~ EVAL 
+
+EXTEND_TOP ~ar1700.bcs~ ~Undivided/data/QD_UNDIVIDED_1700.baf~ EVAL 
+
+// Player Maze 
+EXTEND_TOP ~ar1900.bcs~ ~Undivided/data/QD_UNDIVIDED_1900.baf~ EVAL 
+
+// Fortress of Regrets
+EXTEND_TOP ~ar1200.bcs~ ~Undivided/data/QD_UNDIVIDED_1200.baf~ EVAL 
+
+EXTEND_BOTTOM ~ar1204.bcs~ ~Undivided/data/QD_UNDIVIDED_1204.baf~ EVAL 
+
+EXTEND_BOTTOM ~pcvhail.bcs~ ~Undivided/data/QD_FOLLOWER_SCRIPT.baf~ EVAL

@@ -1,0 +1,64 @@
+// Play Dead
+IF 
+	HP(Myself,1)
+	Global("QD_Play_Dead","LOCALS",0) 
+	Allegiance(Myself,Familiar) 
+THEN
+	RESPONSE #100 
+		SetGlobal("QD_Play_Dead","LOCALS",1) 
+		PlaySound("%play_dead_sound%")
+		SetSequence(SEQ_DIE)
+		ApplySpellRES("QDUNDM1",Myself)
+		ChangeEnemyAlly(Myself, NEUTRAL)
+		Continue()
+END 
+
+// Wake Up
+IF 
+	!ActuallyInCombat()
+	Global("QD_Play_Dead","LOCALS",1) 
+THEN 
+	RESPONSE #100
+		Wait(5)
+		SetGlobal("QD_Play_Dead","LOCALS",0) 
+		SetSequence(ANIM_GETUP)
+		ApplySpellRES("QDUNDM2",Myself)
+		Wait(1)
+		ChangeEnemyAlly(Myself,Familiar)
+		Continue()
+END 
+
+// Return to TNO 
+IF 
+	!ActuallyInCombat()
+	Allegiance(Myself,Familiar) 
+	!Range(Protagonist,%LEASH_DISTANCE%)
+THEN 
+	RESPONSE #100
+		Wait(1)
+		RunToObject(Protagonist) 
+		Continue()
+END 
+
+// Remove follower protections if enemy
+IF 
+	Allegiance(Myself,Enemy) 
+	Global("QD_FOLLOWER","LOCALS",1)
+	!Global("QD_Removed_Follower_FX","LOCALS",1)
+THEN
+	RESPONSE #100 
+		SetGlobal("QD_Removed_Follower_FX","LOCALS",1)
+		SetGlobal("QD_FOLLOWER","LOCALS",0)
+		ApplySpellRES("QDUND2",Myself)
+		Continue()
+END 
+
+//Reset if necessary (should never happen)
+IF 
+	!Allegiance(Myself,Enemy)
+	Global("QD_Removed_Follower_FX","LOCALS",1)
+THEN
+	RESPONSE #100 
+		SetGlobal("QD_Removed_Follower_FX","LOCALS",0)
+		Continue()
+END 

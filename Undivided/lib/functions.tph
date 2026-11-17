@@ -1,0 +1,190 @@
+// Parse dialog 
+// Read through specified dialog file. 
+// Find all instances of JoinParty()
+// Copy the state to check if party already is full. 
+// If not, default (party member) behavior. 
+// If yes, add directly as follower. 
+
+DEFINE_PATCH_FUNCTION qd_update_joins 
+	STR_VAR 
+		character = ~~ // the NPC being affected
+	BEGIN 
+		SPRINT dialog_res ~%SOURCE_RES%~
+		READ_LONG 0x08 num_states
+		READ_LONG 0x0c ofs_states
+		READ_LONG 0x10 num_trans 
+		READ_LONG 0x14 ofs_trans 
+		READ_LONG 0x20 num_triggers
+		READ_LONG 0x24 ofs_triggers
+		READ_LONG 0x28 ofs_actions
+		READ_LONG 0x2c num_actions
+
+		FOR (i=0; i < num_trans; ++i) BEGIN 
+			READ_LONG (ofs_trans + i*0x20) flags 
+
+				// check if transition has associated action
+				PATCH_IF ((flags & BIT2) = BIT2) BEGIN
+					READ_LONG (ofs_trans + i*0x20 + 0x10) idx_action 
+
+					// check if action is valid
+					PATCH_IF (idx_action >= 0 && idx_action < num_actions) BEGIN
+						READ_LONG (ofs_actions + idx_action*0x8) ofs_action_i
+						READ_LONG (ofs_actions + idx_action*0x8 + 0x4) len_action_i
+						READ_ASCII ofs_action_i action_i (len_action_i)
+						
+						// check for JoinParty action
+						PATCH_IF INDEX (~JoinParty~ ~%action_i%~)>0 BEGIN 
+
+							SPRINT old_trigger ~~ 
+
+							// get old trigger, if applicable 
+							PATCH_IF ((flags | BIT1) = BIT1) BEGIN 
+								READ_LONG (ofs_trans + i*0x20 + 0xc) trigger_idx
+								PATCH_IF (trigger_idx >= 0 && trigger_idx < num_triggers) BEGIN
+									READ_LONG (ofs_triggers + trigger_idx*0x8) trigger_i_offset
+									READ_LONG (ofs_triggers + trigger_idx*0x8 + 0x4) trigger_i_length
+									READ_ASCII trigger_i_offset old_trigger (trigger_i_length) 
+								END 
+
+							END 
+
+							// get state idx and relative transition 
+							FOR (j=0; j < num_states; ++j) BEGIN 
+								READ_LONG (ofs_states + j*0x10 + 0x4) trans_first
+								READ_LONG (ofs_states + j*0x10 + 0x8) trans_count 
+
+								PATCH_IF (i >= trans_first && i < (trans_first+trans_count)) BEGIN 
+									SET trans_rel = i - trans_first
+									SET state_idx = j
+								END 
+							END 
+
+
+							// parse flags and contents 
+							PATCH_IF ((flags & BIT0) = BIT0) BEGIN
+								READ_LONG (ofs_trans + i*0x20 + 0x4) strref_reply
+							END ELSE BEGIN 
+								SET strref_reply = "-1" 
+							END 
+
+							PATCH_IF ((flags & BIT3) = BIT3) BEGIN
+								SET next_state = "-1" 
+								
+							END ELSE BEGIN 
+								READ_ASCII (ofs_trans + i*0x20 + 0x14) next_dlg (8)
+								READ_LONG (ofs_trans + i*0x20 + 0x1c) next_state
+								PATCH_IF (next_dlg STRING_EQUAL source_res) BEGIN 
+									SPRINT extern_dlg ~~ 
+								END ELSE BEGIN 
+									SPRINT extern_dlg ~%next_dlg%~ 
+								END 
+							END 
+
+							PATCH_IF ((flags & BIT4) = BIT4) BEGIN
+								READ_LONG (ofs_trans + i*0x20 + 0x8) strref_journal
+							END ELSE BEGIN 
+								SET strref_journal = "-1" 
+							END 
+
+							PATCH_IF ((flags & BIT6) = BIT6) BEGIN
+								READ_LONG (ofs_trans + i*0x20 + 0x8) strref_unsolved
+							END ELSE BEGIN 
+								SET strref_unsolved = "-1" 
+							END 
+
+							PATCH_IF ((flags & BIT7) = BIT7) BEGIN
+								READ_LONG (ofs_trans + i*0x20 + 0x8) strref_solved
+							END ELSE BEGIN 
+								SET strref_solved = "-1" 
+							END 
+
+							// [TODO] fix flags 
+
+							// build duplicate dialog string 
+							LPF qd_build_transition_d 
+								INT_VAR 
+									strref_reply = strref_reply
+									next_state = next_state
+								STR_VAR 
+									trigger = EVAL ~OR(2) NumInPartyGT(5) Global("QD_%character%_1200","GLOBAL",2) %old_trigger%~ 
+									action = EVAL ~%action_i%~
+									extern_dlg = EVAL ~%extern_dlg%~
+								RET test = d_string 
+							END 
+
+							// PATCH_PRINT ~%test%~ 
+
+							INNER_PATCH_SAVE new_transition ~%test%~ BEGIN 
+								REPLACE_TEXTUALLY CASE_INSENSITIVE EXACT_MATCH ~JoinPartyEx(TRUE)~ ~SetInterrupt(FALSE)  SetGlobal("QD_FOLLOWER","LOCALS",1) SetGlobal("QD_%character%_FOLLOWER","GLOBAL",1) ApplySpellRES("QDUND1",Myself) ChangeEnemyAlly(Myself,FAMILIAR) AddFamiliar()  SetInterrupt(TRUE)~
+							END 
+
+
+							//PATCH_PRINT ~%new_transition%~ 
+
+							INNER_ACTION BEGIN 
+
+								COPY ~weidu_external/QD_UNDIVIDED_DIALOG_PATCHES.d~ ~weidu_external~
+									APPEND_FILE_EVALUATE ~.../inlined/Undivided/QD_JOINPARTY.d~
+							END 
+
+						END 
+					END 
+				END 
+		END 
+	END 
+
+
+DEFINE_PATCH_FUNCTION qd_build_transition_d  
+	INT_VAR 
+		strref_reply = "-1" 
+		strref_journal = "-1" 
+		strref_solved = "-1"
+		strref_unsolved = "-1" 
+		flags_override = "-1" 
+		next_state = "-1"
+	STR_VAR 
+		trigger = ~~ 
+		action = ~~ 
+		extern_dlg = ~~ 
+	RET 
+		d_string
+	BEGIN 
+
+		SPRINT d_string "IF ~%trigger%~ THEN"
+
+		PATCH_IF (strref_reply >= 0) BEGIN 
+			SPRINT d_string "%d_string% REPLY #%strref_reply%"
+		END 
+
+		PATCH_IF (action STRING_COMPARE ~~) BEGIN 
+			SPRINT d_string "%d_string% DO ~%action%~"
+		END 
+
+		PATCH_IF (strref_journal >= 0) BEGIN 
+			SPRINT d_string "%d_string% JOURNAL %strref_journal%"
+		END 
+
+		PATCH_IF (strref_solved >= 0) BEGIN 
+			SPRINT d_string "%d_string% SOLVED_JOURNAL %strref_solved%"
+		END 
+
+		PATCH_IF (strref_unsolved >= 0) BEGIN 
+			SPRINT d_string "%d_string% UNSOLVED_JOURNAL %strref_unsolved%"
+		END 
+
+		PATCH_IF (flags_override >= 0) BEGIN 
+			SPRINT d_string "%d_string% FLAGS %flags_override%"
+		END 
+		
+		PATCH_IF (next_state >= 0) BEGIN 
+			PATCH_IF (extern_dlg STRING_COMPARE ~~) BEGIN 
+				SPRINT d_string "%d_string% GOTO %next_state%"
+			END ELSE BEGIN 
+				SPRINT d_string "%d_string% EXTERN %extern_dlg% %next_state%"
+			END 
+		END ELSE BEGIN 
+			SPRINT d_string "%d_string% EXIT"
+		END 
+	
+END 
+
